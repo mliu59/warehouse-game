@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://cf7jbu5u5b766"]
+
+[ext_resource type="TileSet" uid="uid://d1yi7htyg10ru" path="res://scenes/tileset/carpet.tres" id="1_o5qli"]
+
+[node name="Main" type="Node"]
+
+[node name="Map" type="Node" parent="."]
+
+[node name="TileMapLayer" type="TileMapLayer" parent="Map"]
+tile_set = ExtResource("1_o5qli")
