@@ -66,3 +66,6 @@ func get_astar(src: Vector2i, dest: Vector2i) -> Array[Vector2i]:
 func get_world_pos(v: Vector2i) -> Vector2:
 	return $Floor.map_to_local(v)
 
+func remove_point_from_astar(v: Vector2i) -> void:
+	astar.set_point_disabled(flatten_vector2i(v))
+		# map().astar.set_point_disabled()

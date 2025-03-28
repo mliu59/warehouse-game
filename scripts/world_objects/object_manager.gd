@@ -16,7 +16,7 @@ func add_object(obj: WorldObject, type: String) -> void:
 	else:
 		obj_type_map[type] = {obj.get_tile(): obj}
 	if not obj.passable_:
-		map().astar.set_point_disabled(obj.get_tile())
+		map().remove_point_from_astar(obj.get_tile())
 	$Objects.set_cell(obj.get_tile(), 0, obj.atlas_pos_)
 
 func get_object(tile: Vector2i) -> WorldObject:
@@ -31,4 +31,3 @@ func clear_objs() -> void:
 	obj_map.clear()
 	obj_type_map.clear()
 	$Objects.clear()
-
