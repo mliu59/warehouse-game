@@ -1,76 +1,81 @@
+class_name Agent
+
 extends Node2D
 
-var started_process = false
-var state = 0
-var state_start_time = Time.get_ticks_msec()
-# 0 - idle
-# 1 - get item
-# 2 - deposit item
+# const map_ = preload("res://scripts/utils/map_utils.gd")
 
-var src = Vector2i(0, 0)
-var dest = Vector2i(0, 0)
+var state = 0
+var state_start_time = 0
+# 0 - idle
+# 1 - executing task
+
 var cur = Vector2i(0, 0)
 var path: Array[Vector2i] = []
 
-@export var speed: float = 100.0
+var cur_task: Task = null
 
-func start_test_task(source: Vector2i, target: Vector2i, spawn: Vector2i) -> void:
-	cur = spawn
-	position = get_tree().get_nodes_in_group("map")[0].get_world_pos(spawn)
-	src = source
-	dest = target
-	started_process = true
+@export var speed: float = 200.0
+
+func map():
+	return get_tree().get_nodes_in_group("map")[0]
+func taskmgr():
+	return get_tree().get_nodes_in_group("task_manager")[0]
+
+func move_agent(delta) -> bool:
+	var cur_pos = position
+	if path.size() == 0:
+		return true
+	var next_pos = map().get_world_pos(path[0])
+	var move_dir = (next_pos - cur_pos).normalized()
+	var distance = (next_pos - cur_pos).length()
+	var move_distance = speed * delta
+	if distance <= move_distance:
+		position = next_pos
+		cur = path.pop_at(0)
+		return path.size() == 0
+	position += move_dir * move_distance
+	return false
+
+func _tp(tgt: Vector2i) -> void:
+	cur = tgt
+	position = map().get_world_pos(cur)
+
+func start_tasks() -> void:
+	state_start_time = Time.get_ticks_msec()
+	_tp(map().spawn_point)
 	state = 0
 	toggleDialog(true)
 
 func toggleDialog(en: bool):
 	$StatusDialog.visible = en
 
-func state_transition(_dest) -> void:
-	# print("state transition", _dest, state, cur)
+func state_transition() -> void:
 	state_start_time = Time.get_ticks_msec()
-	var map_node = get_tree().get_nodes_in_group("map")[0]
-	path = map_node.get_astar(cur, _dest)
-	# for p in astar_path:
-		# path.append(map_node.get_world_pos(p))
+	if state != 0:
+		cur_task.start_task()
+		cur_task.get_current_subtask().agent_execute(self)
 	toggleDialog(state == 0)
-	print(state)
-	print(path)
+
+func interact(target) -> bool:
+	print("Interacting with ", target)
+	path = []
+	return true
+func move_to(target: Vector2i) -> bool:
+	print("Moving to ", target)
+	path = map().get_astar(cur, target)
+	return path.size() > 0
 
 func _physics_process(delta: float) -> void:
-	if not started_process:
-		return
 	if state == 0 and Time.get_ticks_msec() - state_start_time > 1000:
 		state = 1
-		state_transition(src)
+		cur_task = taskmgr().get_task()
+		state_transition()
 		return
-
 	if state == 1:
-		var cur_pos = position
-		var next_pos = get_tree().get_nodes_in_group("map")[0].get_world_pos(path[0])
-		var move_dir = (next_pos - cur_pos).normalized()
-		var distance = (next_pos - cur_pos).length()
-		var move_distance = speed * delta
-		if distance <= move_distance:
-			position = next_pos
-			cur = path.pop_at(0)
-			if path.size() == 0:
-				state = 2
-				state_transition(dest)
-		else:
-			position += move_dir * move_distance
-
-	if state == 2:
-		var cur_pos = position
-		var next_pos = get_tree().get_nodes_in_group("map")[0].get_world_pos(path[0])
-		var move_dir = (next_pos - cur_pos).normalized()
-		var distance = (next_pos - cur_pos).length()
-		var move_distance = speed * delta
-		if distance <= move_distance:
-			position = next_pos
-			cur = path.pop_at(0)
-			if path.size() == 0:
+		if move_agent(delta):
+			if cur_task.next_subtask():
+				cur_task.get_current_subtask().agent_execute(self)
+			else:
 				state = 0
-				state_transition(src)
-		else:
-			position += move_dir * move_distance
+				state_transition()
+		return

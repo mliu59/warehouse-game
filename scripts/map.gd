@@ -3,12 +3,7 @@ extends Node
 @export var _map_width: int = 20
 @export var _map_height: int = 20
 
-@export var test_source: Vector2i = Vector2i(3, 3)
-@export var test_target: Vector2i = Vector2i(16, 16)
 @export var spawn_point: Vector2i = Vector2i(2, 2)
-
-@export var test_source_sprite = Vector2i(7, 1)
-@export var test_target_sprite = Vector2i(0, 2)
 
 
 var astar = AStar2D.new()
@@ -20,6 +15,7 @@ func unflatten_vector2i(v: int) -> Vector2i:
 
 
 func clear_map() -> void:
+	$ObjectManager.clear_objs()
 	for child in get_children():
 		if is_instance_of(child, TileMapLayer):
 			child.clear()
@@ -57,11 +53,6 @@ func generate_map() -> void:
 	
 	$Floor.set_cells_terrain_connect(_tiles, 0, 0, true)
 	$Walls.set_cells_terrain_connect(_walls, 0, 0, true)
-	
-	$Objects.set_cell(test_source, 0, test_source_sprite)
-	astar.set_point_disabled(flatten_vector2i(test_source))
-	$Objects.set_cell(test_target, 0, test_target_sprite)
-	astar.set_point_disabled(flatten_vector2i(test_target))
 
 func get_astar(src: Vector2i, dest: Vector2i) -> Array[Vector2i]:
 	var src_id = flatten_vector2i(src)
@@ -75,11 +66,3 @@ func get_astar(src: Vector2i, dest: Vector2i) -> Array[Vector2i]:
 func get_world_pos(v: Vector2i) -> Vector2:
 	return $Floor.map_to_local(v)
 
-func _ready() -> void:
-	generate_map()
-
-	# var path = get_astar(test_source, test_target)
-	# if path.size() > 0:
-	# 	$Floor.set_cells_terrain_connect(path, 0, 1, true)
-	# else:
-	# 	print("No path found")
