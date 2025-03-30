@@ -69,3 +69,5 @@ func get_world_pos(v: Vector2i) -> Vector2:
 func remove_point_from_astar(v: Vector2i) -> void:
 	astar.set_point_disabled(flatten_vector2i(v))
 
+func get_neighbor_cell(coords: Vector2i, direction: TileSet.CellNeighbor) -> Vector2i:
+	return $Floor.get_neighbor_cell(coords, direction)

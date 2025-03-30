@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://csvixn0kmb3qt"]
+
+[ext_resource type="Script" uid="uid://wkjhnqmo4kyr" path="res://scripts/world_objects/world_object.gd" id="1_6odbs"]
+[ext_resource type="Texture2D" uid="uid://ckcm1xwkkwgeo" path="res://assets/placeholder/elf.png" id="2_8uidd"]
+
+[node name="WorldObject" type="Node2D"]
+script = ExtResource("1_6odbs")
+
+[node name="sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_8uidd")

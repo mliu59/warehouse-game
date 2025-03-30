@@ -7,13 +7,15 @@ extends Node2D
 var state = 0
 var state_start_time = 0
 # 0 - idle
-# 1 - executing task
+# 1 - moving
+# 2 - interacting
 
 @export var idle_time: int = 500
 
 var cur = Vector2i(0, 0)
 var path: Array[Vector2i] = []
 var cur_task: Task = null
+var interaction_time: int = 0
 
 @export var speed: float = 200.0
 
@@ -24,7 +26,7 @@ func objMgr():
 func taskmgr():
 	return get_node("/root/Main").get_task_manager()
 
-func move_agent(delta) -> bool:
+func _physics_move_agent(delta) -> bool:
 	var cur_pos = position
 	if path.size() == 0:
 		return true
@@ -54,13 +56,36 @@ func toggleDialog(en: bool):
 
 func state_transition() -> void:
 	state_start_time = Time.get_ticks_msec()
-	if state != 0:
-		cur_task.start_task()
-		cur_task.get_current_subtask().agent_execute(self)
+	if cur_task == null:
+		cur_task = taskmgr().get_task()
+		if cur_task == null:
+			print("No task available")
+			return
+	if cur_task.start_task():
+		cur_task.get_next_subtask()
+	if cur_task.finished():
+		print("Task finished")
+		cur_task = null
+		state = 0
+	else:
+		var subtask = cur_task.get_current_subtask()
+		if subtask.get_subtask_type() == subtask.SubtaskType.MOVE_TO:
+			state = 1
+		elif subtask.get_subtask_type() == subtask.SubtaskType.INTERACT:
+			state = 2
+		else:
+			print("Unknown subtask type")
+			state = 0
+			return
+		subtask.agent_execute(self)
+
 	toggleDialog(state == 0)
 
-func interact(target) -> bool:
-	print("Interacting with ", target)
+func interact(obj: WorldObject, interaction_type) -> bool:
+	print("Interacting with ", obj.get_obj_name(), obj.get_obj_id(), " ", interaction_type)
+	# get interaction time, based on the object and interaction type
+	interaction_time = obj.get_time_for_interaction(interaction_type)
+	# interaction_time = 500
 	path = []
 	return true
 func move_to(target: Vector2i) -> bool:
@@ -69,16 +94,20 @@ func move_to(target: Vector2i) -> bool:
 	return path.size() > 0
 
 func _physics_process(delta: float) -> void:
-	if state == 0 and Time.get_ticks_msec() - state_start_time > idle_time:
-		state = 1
-		cur_task = taskmgr().get_task()
-		state_transition()
-		return
-	if state == 1:
-		if move_agent(delta):
-			if cur_task.next_subtask():
-				cur_task.get_current_subtask().agent_execute(self)
-			else:
-				state = 0
+	match state:
+		0: # idle, Check if the agent is idle for too long
+			if Time.get_ticks_msec() - state_start_time > idle_time:
 				state_transition()
-		return
+			return
+		1: # moving, Move the agent
+			if _physics_move_agent(delta):
+				state_transition()
+			return
+		2: # interacting, Interact with the object
+			if Time.get_ticks_msec() - state_start_time > interaction_time:
+				state_transition()
+			return
+		_:
+			print("ERRR")
+
+

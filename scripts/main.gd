@@ -35,6 +35,7 @@ func get_agent_manager() -> Node:
 	return $AgentManager
 
 func get_object_manager() -> Node:
+	# print("get_object_manager")
 	return $Map/ObjectManager
 
 func get_task_manager() -> Node:
