@@ -18,9 +18,3 @@ config/icon="res://icon.svg"
 [dotnet]
 
 project/assembly_name="Warehouse Game"
-
-[global_group]
-
-map=""
-task_manager=""
-obj_manager=""

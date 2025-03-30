@@ -68,4 +68,4 @@ func get_world_pos(v: Vector2i) -> Vector2:
 
 func remove_point_from_astar(v: Vector2i) -> void:
 	astar.set_point_disabled(flatten_vector2i(v))
-		# map().astar.set_point_disabled()
+

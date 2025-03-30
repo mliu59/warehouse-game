@@ -5,9 +5,9 @@ const task_ = preload("res://scripts/task_system/task.gd")
 var task_queue: Array = []
 
 func map():
-	return get_tree().get_nodes_in_group("map")[0]
+	return get_node("/root/Main").get_map()
 func objMgr():
-	return get_tree().get_nodes_in_group("obj_manager")[0]
+	return get_node("/root/Main").get_object_manager()
 
 func get_global_task() -> Task:
 

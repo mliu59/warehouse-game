@@ -10,20 +10,33 @@ const _worldObject = preload("res://scripts/world_objects/world_object.gd")
 
 func _ready() -> void:
 	
-	$Map.generate_map()
+	# generate map
+	get_map().generate_map()
 
-	var sourceObj = _worldObject.new()
-	sourceObj.atlas_pos_ = test_source_sprite
-	sourceObj.pos_ = test_source
-	$Map/ObjectManager.add_object(sourceObj, "Source")
+	# generate static objs
+	get_object_manager().clear_objs()
+	get_object_manager().set_test_source(test_source, test_source_sprite)
+	get_object_manager().set_test_target(test_target, test_target_sprite)
+	get_object_manager().render_objects()
 
-	var targetObj = _worldObject.new()
-	targetObj.atlas_pos_ = test_target_sprite
-	targetObj.pos_ = test_target
-	$Map/ObjectManager.add_object(targetObj, "Target")
-
+	# generate agents
 	for i in range(1):
 		var agent = load("res://scenes/elf.tscn").instantiate()
-		$AgentManager.add_child(agent)
+		get_agent_manager().add_child(agent)
 		agent.start_tasks()
+
+	
+
+## easy access functions for high level managing nodes
+func get_map() -> Node:
+	return $Map
+
+func get_agent_manager() -> Node:
+	return $AgentManager
+
+func get_object_manager() -> Node:
+	return $Map/ObjectManager
+
+func get_task_manager() -> Node:
+	return $TaskManager
 

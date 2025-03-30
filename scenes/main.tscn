@@ -1,10 +1,9 @@
-[gd_scene load_steps=10 format=4 uid="uid://cf7jbu5u5b766"]
+[gd_scene load_steps=9 format=4 uid="uid://cf7jbu5u5b766"]
 
 [ext_resource type="Script" uid="uid://be5vjyeiffxpu" path="res://scripts/map.gd" id="1_jyhfs"]
 [ext_resource type="TileSet" uid="uid://d1yi7htyg10ru" path="res://scenes/tileset/carpet.tres" id="1_o5qli"]
 [ext_resource type="Script" uid="uid://b203bnha7kr70" path="res://scripts/main.gd" id="1_o6xl0"]
 [ext_resource type="Script" uid="uid://kk6cfnmx6y4g" path="res://scripts/task_system/task_manager.gd" id="2_o6xl0"]
-[ext_resource type="TileSet" uid="uid://db10wh7wp73lc" path="res://scenes/tileset/furniture.tres" id="3_sugp2"]
 [ext_resource type="Texture2D" uid="uid://btl6eh8btvl43" path="res://assets/placeholder/4 Walls, Floor & Doors.png" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://cpdcis76wlmg6" path="res://scripts/world_objects/object_manager.gd" id="6_tipki"]
 
@@ -137,10 +136,10 @@ sources/0 = SubResource("TileSetAtlasSource_tbgi4")
 [node name="Main" type="Node"]
 script = ExtResource("1_o6xl0")
 
-[node name="TaskManager" type="Node" parent="." groups=["task_manager"]]
+[node name="TaskManager" type="Node" parent="."]
 script = ExtResource("2_o6xl0")
 
-[node name="Map" type="Node" parent="." groups=["map"]]
+[node name="Map" type="Node" parent="."]
 script = ExtResource("1_jyhfs")
 
 [node name="Floor" type="TileMapLayer" parent="Map"]
@@ -151,12 +150,8 @@ tile_set = ExtResource("1_o5qli")
 tile_map_data = PackedByteArray("AAANAAAAAAACAAAAAAAMAAAAAAABAAIAAAALAAAAAAABAAIAAAAKAAAAAAABAAAAAAAJAAAAAAABAAIAAAAIAAAAAAABAAIAAAAHAAAAAAABAAIAAAAGAAAAAAAFAAAAAAAFAAAAAAAFAAEAAAAEAAAAAAABAAAAAAADAAAAAAABAAAAAAACAAAAAAAFAAAAAAABAAAAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAIAAAAAAAsAAAADAAEAAAAAAAoAAAAAAAEAAAAAAAkAAAAAAAEAAAAAAAgAAAADAAEAAAAAAAcAAAADAAEAAAAAAAYAAAAEAAIAAAAAAAUAAAACAAEAAAAAAAQAAAACAAEAAAAAAAMAAAADAAEAAAAAAAIAAAAAAAEAAAAAAAEAAAAAAAEAAAANAAwAAAACAAIAAAAMAAwAAAAFAAAAAAALAAwAAAABAAIAAAAKAAwAAAABAAIAAAAJAAwAAAAFAAAAAAAIAAwAAAABAAIAAAAHAAwAAAABAAAAAAAGAAwAAAABAAIAAAAFAAwAAAABAAIAAAAEAAwAAAABAAAAAAADAAwAAAABAAIAAAACAAwAAAAFAAAAAAABAAwAAAABAAAAAAANAAsAAAAAAAEAAAANAAoAAAAAAAEAAAANAAkAAAAAAAEAAAANAAgAAAACAAEAAAANAAcAAAAAAAEAAAANAAYAAAACAAEAAAANAAUAAAACAAEAAAANAAQAAAAAAAEAAAANAAMAAAACAAEAAAANAAIAAAACAAEAAAANAAEAAAACAAEAAAAFAAYAAAACAAIAAAAFAAUAAAAAAAEAAAAFAAQAAAACAAEAAAAFAAMAAAADAAEAAAAFAAIAAAADAAEAAAAFAAEAAAACAAEAAAAEAAYAAAAFAAAAAAADAAYAAAAAAAIAAAABAAYAAAAGAAAAAAADAAUAAAACAAEAAAADAAQAAAACAAEAAAADAAMAAAADAAAAAAA=")
 tile_set = SubResource("TileSet_tefeu")
 
-[node name="ObjectManager" type="Node" parent="Map" groups=["obj_manager"]]
+[node name="ObjectManager" type="Node" parent="Map"]
 script = ExtResource("6_tipki")
-
-[node name="Objects" type="TileMapLayer" parent="Map/ObjectManager"]
-tile_map_data = PackedByteArray("AAAHAAIAAAAEAAAAAAAIAAIAAAAEAAAAAAAJAAIAAAAEAAAAAAAKAAIAAAAEAAAAAAAFAAoAAAAHAAEAAAAGAAoAAAAHAAEAAAAHAAoAAAAHAAEAAAAIAAoAAAAHAAEAAAA=")
-tile_set = ExtResource("3_sugp2")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 anchor_mode = 0

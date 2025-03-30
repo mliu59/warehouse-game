@@ -9,17 +9,20 @@ var state_start_time = 0
 # 0 - idle
 # 1 - executing task
 
+@export var idle_time: int = 500
+
 var cur = Vector2i(0, 0)
 var path: Array[Vector2i] = []
-
 var cur_task: Task = null
 
 @export var speed: float = 200.0
 
 func map():
-	return get_tree().get_nodes_in_group("map")[0]
+	return get_node("/root/Main").get_map()
+func objMgr():
+	return get_node("/root/Main").get_object_manager()
 func taskmgr():
-	return get_tree().get_nodes_in_group("task_manager")[0]
+	return get_node("/root/Main").get_task_manager()
 
 func move_agent(delta) -> bool:
 	var cur_pos = position
@@ -66,7 +69,7 @@ func move_to(target: Vector2i) -> bool:
 	return path.size() > 0
 
 func _physics_process(delta: float) -> void:
-	if state == 0 and Time.get_ticks_msec() - state_start_time > 1000:
+	if state == 0 and Time.get_ticks_msec() - state_start_time > idle_time:
 		state = 1
 		cur_task = taskmgr().get_task()
 		state_transition()
