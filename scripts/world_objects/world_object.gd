@@ -71,3 +71,35 @@ func get_tile_for_interaction(interaction_type) -> Vector2i:
 
 func get_time_for_interaction(interaction_type) -> int:
 	return interaction_times_[interaction_type]
+
+func interact(agent: Agent, interaction_type) -> bool:
+	if not interactable_:
+		print("Object is not interactable")
+		return false
+	if not allowed_interaction_types_.has(interaction_type):
+		print("Interaction type not allowed")
+		return false
+	
+	var source = null
+	var target = null
+	if interaction_type == OBJ_INTERACTION_TYPE.RETRIEVE_ITEM:
+		print("Retrieving item from ", get_obj_name())
+		source = get_inventory()
+		target = agent.get_inventory()
+	elif interaction_type == OBJ_INTERACTION_TYPE.DEPOSIT_ITEM:
+		print("Depositing item to ", get_obj_name())
+		source = agent.get_inventory()
+		target = get_inventory()
+	else:
+		print("Unknown interaction type")
+		return false
+	
+	return source.transfer_item_to(target, "%TEST_ITEM%", 1)
+
+func get_inventory():
+	return $GenericInventory
+
+func get_inventory_counter():
+	return $TEST_ITEM_COUNTER
+func _on_inventory_changed():
+	get_inventory_counter().set_text(str(get_inventory().get_inventory_size()))

@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://dl0bej7k1rb4"]
+[gd_scene load_steps=6 format=3 uid="uid://dl0bej7k1rb4"]
 
 [ext_resource type="Script" uid="uid://biqhc56no7uwk" path="res://scripts/agent.gd" id="1_8njuj"]
 [ext_resource type="Texture2D" uid="uid://ckcm1xwkkwgeo" path="res://assets/placeholder/elf.png" id="1_apm6r"]
 [ext_resource type="Texture2D" uid="uid://c62jqpjpyw0wo" path="res://assets/placeholder/agent/dialog.png" id="3_87fwm"]
 [ext_resource type="Texture2D" uid="uid://gydk0gkd7ssf" path="res://assets/placeholder/agent/dialog_icons/thinking.png" id="4_1rjhg"]
+[ext_resource type="PackedScene" uid="uid://n8dw8m0xg3el" path="res://scenes/generic_inventory.tscn" id="5_7q6b2"]
 
 [node name="Elf" type="Node2D"]
 script = ExtResource("1_8njuj")
@@ -17,3 +18,15 @@ texture = ExtResource("3_87fwm")
 
 [node name="thinking" type="Sprite2D" parent="StatusDialog"]
 texture = ExtResource("4_1rjhg")
+
+[node name="GenericInventory" parent="." instance=ExtResource("5_7q6b2")]
+
+[node name="TEST_ITEM_COUNTER" type="Label" parent="."]
+offset_left = 5.0
+offset_top = -14.0
+offset_right = 45.0
+offset_bottom = 9.0
+theme_override_font_sizes/font_size = 9
+text = "0"
+
+[connection signal="inventory_changed" from="GenericInventory" to="." method="_on_inventory_changed"]

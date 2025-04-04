@@ -1,6 +1,7 @@
 extends Node
 
 const _worldObject = preload("res://scripts/world_objects/world_object.gd")
+
 var obj_map: Dictionary = {}
 var obj_type_map: Dictionary = {}
 var running_id_counter: int = 0
@@ -37,6 +38,9 @@ func set_test_source(test_source, test_source_sprite):
 	sourceObj._name = "Source"
 	sourceObj.interactable_ = true
 	add_object(sourceObj, "Source")
+	for i in range(3):
+		var item = load("res://scenes/generic_item.tscn").instantiate()
+		sourceObj.get_inventory().add_item(item)
 
 func set_test_target(test_target, test_target_sprite):
 	var targetObj = load("res://scenes/world_object.tscn").instantiate()

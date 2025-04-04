@@ -4,7 +4,7 @@ const _worldObject = preload("res://scripts/world_objects/world_object.gd")
 
 
 @export var test_source: Vector2i = Vector2i(3, 3)
-@export var test_target: Vector2i = Vector2i(16, 16)
+@export var test_target: Vector2i = Vector2i(5, 5)
 @export var test_source_sprite = Vector2i(7, 1)
 @export var test_target_sprite = Vector2i(0, 2)
 

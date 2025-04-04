@@ -13,6 +13,9 @@ func get_global_task() -> Task:
 
 	# TEST TASK
 	var src = objMgr().get_first_object("Source")
+	if src.get_inventory().is_empty():
+		print("Source inventory is empty")
+		return null
 	var tgt = objMgr().get_first_object("Target")
 	var task = task_.new()
 	task.initialize_test_task(src, tgt)
@@ -21,6 +24,8 @@ func get_global_task() -> Task:
 func get_task() -> Task:
 	if task_queue.size() == 0:
 		var task = get_global_task()
+		if task == null:
+			return null
 		task_queue.append(task)
 		add_child(task)
 	return task_queue.pop_front()

@@ -15,7 +15,9 @@ var state_start_time = 0
 var cur = Vector2i(0, 0)
 var path: Array[Vector2i] = []
 var cur_task: Task = null
-var interaction_time: int = 0
+var queued_interaction_time: int = 0
+var queued_interaction_obj: WorldObject = null
+var queued_interaction_type: int = -1
 
 @export var speed: float = 200.0
 
@@ -60,6 +62,8 @@ func state_transition() -> void:
 		cur_task = taskmgr().get_task()
 		if cur_task == null:
 			print("No task available")
+			state = 0
+			toggleDialog(true)
 			return
 	if cur_task.start_task():
 		cur_task.get_next_subtask()
@@ -84,8 +88,9 @@ func state_transition() -> void:
 func interact(obj: WorldObject, interaction_type) -> bool:
 	print("Interacting with ", obj.get_obj_name(), obj.get_obj_id(), " ", interaction_type)
 	# get interaction time, based on the object and interaction type
-	interaction_time = obj.get_time_for_interaction(interaction_type)
-	# interaction_time = 500
+	queued_interaction_time = obj.get_time_for_interaction(interaction_type)
+	queued_interaction_obj = obj
+	queued_interaction_type = interaction_type
 	path = []
 	return true
 func move_to(target: Vector2i) -> bool:
@@ -104,10 +109,34 @@ func _physics_process(delta: float) -> void:
 				state_transition()
 			return
 		2: # interacting, Interact with the object
-			if Time.get_ticks_msec() - state_start_time > interaction_time:
+			render()
+			if Time.get_ticks_msec() - state_start_time > queued_interaction_time:
+				trigger_interact()
 				state_transition()
 			return
 		_:
 			print("ERRR")
 
+func render():
+	pass
 
+func trigger_interact() -> void:
+	if queued_interaction_obj == null:
+		print("No object to interact with")
+		return
+	if queued_interaction_type == -1:
+		print("No interaction type")
+		return
+
+	queued_interaction_obj.interact(self, queued_interaction_type)
+
+	queued_interaction_obj = null
+	queued_interaction_type = -1
+
+func get_inventory():
+	return $GenericInventory
+
+func get_inventory_counter():
+	return $TEST_ITEM_COUNTER
+func _on_inventory_changed():
+	get_inventory_counter().set_text(str(get_inventory().get_inventory_size()))
