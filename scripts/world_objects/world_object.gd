@@ -46,6 +46,7 @@ func map():
 func init() -> void:
 	if not passable_:
 		map().remove_point_from_astar(get_tile())
+		map().disable_diagonal_traversal(get_tile())
 
 func get_cell_texture() -> Texture:
 	var rect := atlas_source_.get_tile_texture_region(atlas_pos_)

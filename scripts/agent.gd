@@ -117,7 +117,7 @@ func _physics_process(delta: float) -> void:
 				state_transition()
 			return
 		2: # interacting, Interact with the object
-			
+			render_interact()
 			if Time.get_ticks_msec() - state_start_time > queued_interaction_time:
 				trigger_interact()
 				state_transition()
@@ -127,7 +127,8 @@ func _physics_process(delta: float) -> void:
 
 func render_interact():
 	if state == 2:
-		get_progress_bar().value = (float(Time.get_ticks_msec() - state_start_time) / queued_interaction_time)
+		#print(float(Time.get_ticks_msec() - state_start_time) / queued_interaction_time)
+		get_progress_bar().value = float(Time.get_ticks_msec() - state_start_time)
 		get_progress_bar().visible = true
 	else:
 		get_progress_bar().visible = false
