@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=4 uid="uid://cf7jbu5u5b766"]
+[gd_scene load_steps=11 format=4 uid="uid://cf7jbu5u5b766"]
 
 [ext_resource type="Script" uid="uid://be5vjyeiffxpu" path="res://scripts/map.gd" id="1_jyhfs"]
 [ext_resource type="TileSet" uid="uid://d1yi7htyg10ru" path="res://scenes/tileset/carpet.tres" id="1_o5qli"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://btl6eh8btvl43" path="res://assets/placeholder/4 Walls, Floor & Doors.png" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://cpdcis76wlmg6" path="res://scripts/world_objects/object_manager.gd" id="6_tipki"]
 [ext_resource type="PackedScene" uid="uid://csvixn0kmb3qt" path="res://scenes/world_object.tscn" id="7_o6xl0"]
+[ext_resource type="Script" uid="uid://bh6uobjp4a4li" path="res://scripts/main_camera_2d.gd" id="8_tipki"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tbgi4"]
 texture = ExtResource("4_jyhfs")
@@ -156,8 +157,9 @@ script = ExtResource("6_tipki")
 
 [node name="WorldObject" parent="Map/ObjectManager" instance=ExtResource("7_o6xl0")]
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="MainCamera2D" type="Camera2D" parent="."]
 anchor_mode = 0
-zoom = Vector2(1.5, 1.5)
+zoom = Vector2(2, 2)
+script = ExtResource("8_tipki")
 
 [node name="AgentManager" type="Node" parent="."]

@@ -4,7 +4,7 @@ const _worldObject = preload("res://scripts/world_objects/world_object.gd")
 
 
 @export var test_source: Vector2i = Vector2i(3, 3)
-@export var test_target: Vector2i = Vector2i(5, 5)
+@export var test_target: Vector2i = Vector2i(7, 7)
 @export var test_source_sprite = Vector2i(7, 1)
 @export var test_target_sprite = Vector2i(0, 2)
 
@@ -12,6 +12,7 @@ func _ready() -> void:
 	
 	# generate map
 	get_map().generate_map()
+	get_camera().center_camera_for_map(get_map())
 
 	# generate static objs
 	get_object_manager().clear_objs()
@@ -40,4 +41,5 @@ func get_object_manager() -> Node:
 
 func get_task_manager() -> Node:
 	return $TaskManager
-
+func get_camera() -> Node:
+	return $MainCamera2D

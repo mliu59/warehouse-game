@@ -7,6 +7,13 @@ extends Node
 
 
 var astar = AStar2D.new()
+var min_x = 999
+var max_x = -999
+var min_y = 999
+var max_y = -999
+var map_x_size_pixels: int = 0
+var map_y_size_pixels: int = 0
+var map_center_pixels: Vector2 = Vector2(0, 0)
 
 func flatten_vector2i(v: Vector2i) -> int:
 	return v.x * 1000 + v.y
@@ -19,6 +26,27 @@ func clear_map() -> void:
 	for child in get_children():
 		if is_instance_of(child, TileMapLayer):
 			child.clear()
+
+func _update_map_lims(v: Vector2i) -> void:
+	if v.x < min_x:
+		min_x = v.x
+	if v.x > max_x:
+		max_x = v.x
+	if v.y < min_y:
+		min_y = v.y
+	if v.y > max_y:
+		max_y = v.y
+func _calc_map_lims() -> void:
+	var tile_size = $Floor.tile_set.tile_size
+	var x = max_x - min_x + 1
+	var y = max_y - min_y + 1
+	map_x_size_pixels = (x+1) * tile_size.x
+	map_y_size_pixels = (y+1) * tile_size.y
+	var center_x = float(max_x + min_x) / 2
+	var center_y = float(max_y + min_y) / 2
+	var map_center_x = get_world_pos(Vector2i(0, 0)).x + (center_x * tile_size.x)
+	var map_center_y = get_world_pos(Vector2i(0, 0)).y + (center_y * tile_size.y)
+	map_center_pixels = Vector2(map_center_x, map_center_y)
 
 func generate_map() -> void:
 	clear_map()
@@ -50,6 +78,12 @@ func generate_map() -> void:
 	for wall in _walls:
 		if astar.has_point(flatten_vector2i(wall)):
 			astar.set_point_disabled(flatten_vector2i(wall))
+
+	for tile in _tiles:
+		_update_map_lims(tile)
+	for wall in _walls:
+		_update_map_lims(wall)
+	_calc_map_lims()
 	
 	$Floor.set_cells_terrain_connect(_tiles, 0, 0, true)
 	$Walls.set_cells_terrain_connect(_walls, 0, 0, true)

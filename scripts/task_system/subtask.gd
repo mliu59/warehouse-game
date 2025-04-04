@@ -28,10 +28,8 @@ func get_subtask_type() -> SubtaskType:
 func agent_execute(agent: Agent) -> bool:
 	match subtask_type:
 		SubtaskType.INTERACT:
-			if not agent.interact(target, interaction_type): return false
-			return true
+			return agent.queue_interact(target, interaction_type)
 		SubtaskType.MOVE_TO:
-			if not agent.move_to(target): return false
-			return true
+			return agent.queue_move_to(target)
 		_:
 			return false

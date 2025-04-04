@@ -29,6 +29,9 @@ func get_first_object(type: String) -> WorldObject:
 func clear_objs() -> void:
 	obj_map.clear()
 	obj_type_map.clear()
+	for child in get_children():
+		if is_instance_of(child, WorldObject):
+			remove_child(child)
 
 # PLACEHOLDER FUNCTIONS
 func set_test_source(test_source, test_source_sprite):

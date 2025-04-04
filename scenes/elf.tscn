@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://dl0bej7k1rb4"]
+[gd_scene load_steps=8 format=3 uid="uid://dl0bej7k1rb4"]
 
 [ext_resource type="Script" uid="uid://biqhc56no7uwk" path="res://scripts/agent.gd" id="1_8njuj"]
 [ext_resource type="Texture2D" uid="uid://ckcm1xwkkwgeo" path="res://assets/placeholder/elf.png" id="1_apm6r"]
 [ext_resource type="Texture2D" uid="uid://c62jqpjpyw0wo" path="res://assets/placeholder/agent/dialog.png" id="3_87fwm"]
 [ext_resource type="Texture2D" uid="uid://gydk0gkd7ssf" path="res://assets/placeholder/agent/dialog_icons/thinking.png" id="4_1rjhg"]
 [ext_resource type="PackedScene" uid="uid://n8dw8m0xg3el" path="res://scenes/generic_inventory.tscn" id="5_7q6b2"]
+[ext_resource type="Texture2D" uid="uid://bk7ft3u4s3r20" path="res://assets/gui/agent_progress_bar/agent_progress_bar_base.png" id="6_eovf7"]
+[ext_resource type="Texture2D" uid="uid://dcy8b1rbqds3j" path="res://assets/gui/agent_progress_bar/agent_progress_bar_fill.png" id="7_yxak0"]
 
 [node name="Elf" type="Node2D"]
 script = ExtResource("1_8njuj")
@@ -13,7 +15,7 @@ script = ExtResource("1_8njuj")
 texture = ExtResource("1_apm6r")
 
 [node name="StatusDialog" type="Sprite2D" parent="."]
-position = Vector2(0, -16)
+position = Vector2(0, -17)
 texture = ExtResource("3_87fwm")
 
 [node name="thinking" type="Sprite2D" parent="StatusDialog"]
@@ -22,11 +24,26 @@ texture = ExtResource("4_1rjhg")
 [node name="GenericInventory" parent="." instance=ExtResource("5_7q6b2")]
 
 [node name="TEST_ITEM_COUNTER" type="Label" parent="."]
-offset_left = 5.0
-offset_top = -14.0
+offset_left = 6.0
+offset_top = -16.0
 offset_right = 45.0
-offset_bottom = 9.0
+offset_bottom = -3.0
 theme_override_font_sizes/font_size = 9
 text = "0"
+
+[node name="ProgressBar" type="TextureProgressBar" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -8.0
+offset_top = 10.0
+offset_right = 8.0
+offset_bottom = 13.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 50.0
+texture_under = ExtResource("6_eovf7")
+texture_progress = ExtResource("7_yxak0")
 
 [connection signal="inventory_changed" from="GenericInventory" to="." method="_on_inventory_changed"]

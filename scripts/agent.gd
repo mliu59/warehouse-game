@@ -56,14 +56,18 @@ func start_tasks() -> void:
 func toggleDialog(en: bool):
 	$StatusDialog.visible = en
 
+func default_idle_state() -> void:
+	state = 0
+	render_interact()
+	toggleDialog(true)
+
 func state_transition() -> void:
 	state_start_time = Time.get_ticks_msec()
 	if cur_task == null:
 		cur_task = taskmgr().get_task()
 		if cur_task == null:
 			print("No task available")
-			state = 0
-			toggleDialog(true)
+			default_idle_state()
 			return
 	if cur_task.start_task():
 		cur_task.get_next_subtask()
@@ -79,21 +83,25 @@ func state_transition() -> void:
 			state = 2
 		else:
 			print("Unknown subtask type")
-			state = 0
+			default_idle_state()
 			return
 		subtask.agent_execute(self)
 
+	render_interact()
 	toggleDialog(state == 0)
 
-func interact(obj: WorldObject, interaction_type) -> bool:
+func queue_interact(obj: WorldObject, interaction_type) -> bool:
 	print("Interacting with ", obj.get_obj_name(), obj.get_obj_id(), " ", interaction_type)
 	# get interaction time, based on the object and interaction type
 	queued_interaction_time = obj.get_time_for_interaction(interaction_type)
+	get_progress_bar().max_value = queued_interaction_time
+	get_progress_bar().value = (0)
+
 	queued_interaction_obj = obj
 	queued_interaction_type = interaction_type
 	path = []
 	return true
-func move_to(target: Vector2i) -> bool:
+func queue_move_to(target: Vector2i) -> bool:
 	print("Moving to ", target)
 	path = map().get_astar(cur, target)
 	return path.size() > 0
@@ -109,7 +117,7 @@ func _physics_process(delta: float) -> void:
 				state_transition()
 			return
 		2: # interacting, Interact with the object
-			render()
+			
 			if Time.get_ticks_msec() - state_start_time > queued_interaction_time:
 				trigger_interact()
 				state_transition()
@@ -117,8 +125,12 @@ func _physics_process(delta: float) -> void:
 		_:
 			print("ERRR")
 
-func render():
-	pass
+func render_interact():
+	if state == 2:
+		get_progress_bar().value = (float(Time.get_ticks_msec() - state_start_time) / queued_interaction_time)
+		get_progress_bar().visible = true
+	else:
+		get_progress_bar().visible = false
 
 func trigger_interact() -> void:
 	if queued_interaction_obj == null:
@@ -135,6 +147,8 @@ func trigger_interact() -> void:
 
 func get_inventory():
 	return $GenericInventory
+func get_progress_bar():
+	return $ProgressBar
 
 func get_inventory_counter():
 	return $TEST_ITEM_COUNTER
