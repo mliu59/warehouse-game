@@ -1,11 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://csvixn0kmb3qt"]
+[gd_scene load_steps=3 format=3 uid="uid://clcv82wlihvj3"]
 
-[ext_resource type="Script" uid="uid://wkjhnqmo4kyr" path="res://scripts/world_objects/world_object.gd" id="1_6odbs"]
 [ext_resource type="Texture2D" uid="uid://ckcm1xwkkwgeo" path="res://assets/placeholder/elf.png" id="2_8uidd"]
 [ext_resource type="PackedScene" uid="uid://n8dw8m0xg3el" path="res://scenes/generic_inventory.tscn" id="3_sa2ys"]
 
-[node name="WorldObject" type="Node2D"]
-script = ExtResource("1_6odbs")
+[node name="world_object" type="Node2D"]
 
 [node name="sprite" type="Sprite2D" parent="."]
 texture = ExtResource("2_8uidd")

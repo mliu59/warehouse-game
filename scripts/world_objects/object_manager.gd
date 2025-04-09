@@ -2,9 +2,26 @@ extends Node
 
 const _worldObject = preload("res://scripts/world_objects/world_object.gd")
 
+const WORLD_OBJECTS = [
+	"res://scenes/world_objects/source_box.tscn",
+	"res://scenes/world_objects/target_box.tscn",
+	"res://scenes/world_objects/item_pile.tscn",
+]
+
+var world_object_dict: Dictionary = {}
+func _init() -> void:
+	for world_object in WORLD_OBJECTS:
+		var obj = load(world_object).instantiate()
+		world_object_dict[obj.get_obj_name()] = world_object
+		obj.queue_free()
+
+
 var obj_map: Dictionary = {}
 var obj_type_map: Dictionary = {}
 var running_id_counter: int = 0
+
+func map():
+	return get_node("/root/Main").get_map()
 
 func add_object(obj: WorldObject, type: String) -> void:
 	add_child(obj)
@@ -14,17 +31,29 @@ func add_object(obj: WorldObject, type: String) -> void:
 	else:
 		obj_type_map[type] = {obj.get_tile(): obj}
 	obj.init()
-
 	obj._id = running_id_counter
 	running_id_counter += 1
 
-func get_object(tile: Vector2i) -> WorldObject:
-	return obj_map.get(tile, null)
-
-func get_first_object(type: String) -> WorldObject:
+func get_object_count(type: String) -> int:
 	if obj_type_map.has(type):
-		return obj_type_map[type].values().front()
+		return obj_type_map[type].size()
+	return 0
+func get_object_by_index(type: String, index: int = 0) -> WorldObject:
+	if obj_type_map.has(type):
+		var obj_list = obj_type_map[type]
+		if index >= 0 and index < obj_list.size():
+			return obj_list.values()[index]
 	return null
+
+func remove_world_object(obj: WorldObject) -> void:
+	if obj_map.has(obj.get_tile()):
+		obj_map.erase(obj.get_tile())
+		if obj_type_map.has(obj.get_obj_name()):
+			obj_type_map[obj.get_obj_name()].erase(obj.get_tile())
+		obj.queue_free()
+		map().enable_tile(obj.get_tile())
+	else:
+		print("Object not found in map")
 
 func clear_objs() -> void:
 	obj_map.clear()
@@ -33,25 +62,15 @@ func clear_objs() -> void:
 		if is_instance_of(child, WorldObject):
 			remove_child(child)
 
-# PLACEHOLDER FUNCTIONS
-func set_test_source(test_source, test_source_sprite):
-	var sourceObj = load("res://scenes/world_object.tscn").instantiate()
-	sourceObj.atlas_pos_ = test_source_sprite
-	sourceObj.pos_ = test_source
-	sourceObj._name = "Source"
-	sourceObj.interactable_ = true
-	add_object(sourceObj, "Source")
-	for i in range(3):
-		var item = load("res://scenes/generic_item.tscn").instantiate()
-		sourceObj.get_inventory().add_item(item)
-
-func set_test_target(test_target, test_target_sprite):
-	var targetObj = load("res://scenes/world_object.tscn").instantiate()
-	targetObj.atlas_pos_ = test_target_sprite
-	targetObj.pos_ = test_target
-	targetObj._name = "Target"
-	targetObj.interactable_ = true
-	add_object(targetObj, "Target")
+func add_world_object(type: String, tile: Vector2i) -> WorldObject:
+	if world_object_dict.has(type):
+		var obj = load(world_object_dict[type]).instantiate()
+		obj.pos_ = tile
+		add_object(obj, type)
+		return obj
+	else:
+		print("Object type not found in dictionary")
+		return null
 
 
 func render_objects() -> void:

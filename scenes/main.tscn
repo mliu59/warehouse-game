@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=4 uid="uid://cf7jbu5u5b766"]
+[gd_scene load_steps=14 format=4 uid="uid://cf7jbu5u5b766"]
 
 [ext_resource type="Script" uid="uid://be5vjyeiffxpu" path="res://scripts/map.gd" id="1_jyhfs"]
 [ext_resource type="TileSet" uid="uid://d1yi7htyg10ru" path="res://scenes/tileset/carpet.tres" id="1_o5qli"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" uid="uid://kk6cfnmx6y4g" path="res://scripts/task_system/task_manager.gd" id="2_o6xl0"]
 [ext_resource type="Texture2D" uid="uid://btl6eh8btvl43" path="res://assets/placeholder/4 Walls, Floor & Doors.png" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://cpdcis76wlmg6" path="res://scripts/world_objects/object_manager.gd" id="6_tipki"]
+[ext_resource type="Texture2D" uid="uid://cwlapp2q2wgjs" path="res://assets/placeholder/grid/debug_grid.png" id="7_85g3d"]
+[ext_resource type="Script" uid="uid://dls61w23mlbjk" path="res://scripts/agent_manager.gd" id="8_85g3d"]
 [ext_resource type="Script" uid="uid://bh6uobjp4a4li" path="res://scripts/main_camera_2d.gd" id="8_tipki"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tbgi4"]
@@ -134,6 +136,13 @@ terrain_set_0/terrain_0/name = "walls"
 terrain_set_0/terrain_0/color = Color(0.858824, 0.168627, 0.294118, 1)
 sources/0 = SubResource("TileSetAtlasSource_tbgi4")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_choun"]
+texture = ExtResource("7_85g3d")
+0:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_ya4ey"]
+sources/0 = SubResource("TileSetAtlasSource_choun")
+
 [node name="Main" type="Node"]
 script = ExtResource("1_o6xl0")
 
@@ -156,11 +165,21 @@ tile_set = SubResource("TileSet_tefeu")
 [node name="ObjectManager" type="Node" parent="Map"]
 script = ExtResource("6_tipki")
 
+[node name="Debug" type="Node" parent="Map"]
+
+[node name="Grid" type="TileMapLayer" parent="Map/Debug"]
+modulate = Color(1, 1, 1, 0.133333)
+tile_set = SubResource("TileSet_ya4ey")
+
+[node name="GridLabels" type="Node2D" parent="Map/Debug"]
+modulate = Color(1, 1, 1, 0.427451)
+
 [node name="MainCamera2D" type="Camera2D" parent="."]
 anchor_mode = 0
 zoom = Vector2(2, 2)
 script = ExtResource("8_tipki")
 
 [node name="AgentManager" type="Node" parent="."]
+script = ExtResource("8_85g3d")
 
 [node name="GUI" type="CanvasLayer" parent="."]

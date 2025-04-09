@@ -3,10 +3,8 @@ extends Node
 @export var _map_width: int = 20
 @export var _map_height: int = 20
 
-@export var spawn_point: Vector2i = Vector2i(2, 2)
 
-
-var astar = AStar2D.new()
+var astar: TileMapAStar = TileMapAStar.new()
 var min_x = 999
 var max_x = -999
 var min_y = 999
@@ -15,29 +13,20 @@ var map_x_size_pixels: int = 0
 var map_y_size_pixels: int = 0
 var map_center_pixels: Vector2 = Vector2(0, 0)
 
-func flatten_vector2i(v: Vector2i) -> int:
-	return v.x * 1000 + v.y
-func unflatten_vector2i(v: int) -> Vector2i:
-	return Vector2i(v / 1000, v % 1000)
 
-
-const adj_tile_directions: Array[TileSet.CellNeighbor] = [
-	TileSet.CellNeighbor.CELL_NEIGHBOR_TOP_SIDE,
-	TileSet.CellNeighbor.CELL_NEIGHBOR_RIGHT_SIDE,
-	TileSet.CellNeighbor.CELL_NEIGHBOR_BOTTOM_SIDE,
-	TileSet.CellNeighbor.CELL_NEIGHBOR_LEFT_SIDE
-]
-
-const diag_tile_directions: Array[TileSet.CellNeighbor] = [
-	TileSet.CellNeighbor.CELL_NEIGHBOR_BOTTOM_LEFT_CORNER,
-	TileSet.CellNeighbor.CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER,
-	TileSet.CellNeighbor.CELL_NEIGHBOR_TOP_RIGHT_CORNER,
-	TileSet.CellNeighbor.CELL_NEIGHBOR_TOP_LEFT_CORNER
-	
-]
+func get_object_manager():
+	return $ObjectManager
+func get_carpet_floor():
+	return $Floor
+func get_walls():
+	return $Walls
+func get_debug_grid() -> TileMapLayer:
+	return $Debug/Grid
+func get_debug_grid_labels():
+	return $Debug/GridLabels
 
 func clear_map() -> void:
-	$ObjectManager.clear_objs()
+	get_object_manager().clear_objs()
 	for child in get_children():
 		if is_instance_of(child, TileMapLayer):
 			child.clear()
@@ -52,7 +41,7 @@ func _update_map_lims(v: Vector2i) -> void:
 	if v.y > max_y:
 		max_y = v.y
 func _calc_map_lims() -> void:
-	var tile_size = $Floor.tile_set.tile_size
+	var tile_size = get_carpet_floor().tile_set.tile_size
 	var x = max_x - min_x + 1
 	var y = max_y - min_y + 1
 	map_x_size_pixels = (x+1) * tile_size.x
@@ -65,10 +54,9 @@ func _calc_map_lims() -> void:
 
 func disable_diagonal_traversal(v: Vector2i):
 	for i in range(4):
-		var t1 = get_neighbor_cell(v, adj_tile_directions[i])
-		var t2 = get_neighbor_cell(v, adj_tile_directions[(i+1)%4])
-		if astar.has_point(flatten_vector2i(t1)) and astar.has_point(flatten_vector2i(t2)):
-			astar.disconnect_points(flatten_vector2i(t1), flatten_vector2i(t2))
+		var t1 = get_neighbor_cell(v, MapUtils.ADJ_TILES[i])
+		var t2 = get_neighbor_cell(v, MapUtils.ADJ_TILES[(i+1)%4])
+		astar.disconnect_pts(t1, t2)
 
 func generate_map() -> void:
 	clear_map()
@@ -84,29 +72,21 @@ func generate_map() -> void:
 			var v = Vector2i(x+1, y+1)
 			if v in clear_tiles: continue
 			_tiles.append(v)
-			astar.add_point(flatten_vector2i(v), v, 1.0)
+			astar.add_pt(v)
 	
 	# generate astar map
-	for id in astar.get_point_ids():
-		var _point = unflatten_vector2i(id)
-		for direction in adj_tile_directions:
-			var _neighbour = get_neighbor_cell(_point, direction)
-			if astar.has_point(flatten_vector2i(_neighbour)):
-				astar.connect_points(id, flatten_vector2i(_neighbour), 1.0)
-		for direction in diag_tile_directions:
-			var _neighbour = get_neighbor_cell(_point, direction)
-			if astar.has_point(flatten_vector2i(_neighbour)):
-				astar.connect_points(id, flatten_vector2i(_neighbour), 1.414)
+	for tile in _tiles:
+		astar.connect_pt_to_all_neighbors(tile, get_carpet_floor())
 
 	# generate walls: any tile adjacent to a map tile without itself being a map tile (borders of map)
 	var _walls: Array[Vector2i] = []
 	for tile in _tiles:
-		for direction in adj_tile_directions + diag_tile_directions:
-			var wall = get_neighbor_cell(tile, direction)
-			if not astar.has_point(flatten_vector2i(wall)):
+		var potential_walls = MapUtils.get_neighbors(tile, MapUtils.ADJ_TILES_8, get_carpet_floor())
+		for wall in potential_walls:
+			if not astar.pt_open(wall):
 				_walls.append(wall)
 				# do not allow diagonal traversal across walls
-				disable_diagonal_traversal(wall)
+				disable_tile(wall)
 
 	for tile in _tiles:
 		_update_map_lims(tile)
@@ -114,23 +94,49 @@ func generate_map() -> void:
 		_update_map_lims(wall)
 	_calc_map_lims()
 	
-	$Floor.set_cells_terrain_connect(_tiles, 0, 0, false)
-	$Walls.set_cells_terrain_connect(_walls, 0, 0, false)
+	get_carpet_floor().set_cells_terrain_connect(_tiles, 0, 0, false)
+	get_walls().set_cells_terrain_connect(_walls, 0, 0, false)
 
-func get_astar(src: Vector2i, dest: Vector2i) -> Array[Vector2i]:
-	var src_id = flatten_vector2i(src)
-	var dest_id = flatten_vector2i(dest)
-	var path = astar.get_id_path(src_id, dest_id)
-	var output: Array[Vector2i] = []
-	for p in path:
-		output.append(unflatten_vector2i(p))
-	return output
+	populate_debug_grid()
+
+func get_tile_path(src: Vector2i, dest: Vector2i) -> Array[Vector2i]:
+	return astar.get_path(src, dest)
+func get_distance(src: Vector2i, dest: Vector2i) -> float:
+	return astar.get_distance(src, dest)
 
 func get_world_pos(v: Vector2i) -> Vector2:
-	return $Floor.map_to_local(v)
+	return get_carpet_floor().map_to_local(v)
 
-func remove_point_from_astar(v: Vector2i) -> void:
-	astar.set_point_disabled(flatten_vector2i(v))
+func disable_tile(v: Vector2i) -> void:
+	astar.remove_pt(v)
+	disable_diagonal_traversal(v)
+func enable_tile(v: Vector2i) -> void:
+	astar.enable_pt(v)
 
 func get_neighbor_cell(coords: Vector2i, direction: TileSet.CellNeighbor) -> Vector2i:
-	return $Floor.get_neighbor_cell(coords, direction)
+	return get_carpet_floor().get_neighbor_cell(coords, direction)
+
+func get_random_open_tile() -> Vector2i:
+	var rng = RandomNumberGenerator.new()
+	var tile = Vector2i(rng.randi_range(min_x, max_x), rng.randi_range(min_y, max_y))
+	while not astar.pt_open(tile):
+		tile = Vector2i(rng.randi_range(min_x, max_x), rng.randi_range(min_y, max_y))
+	return tile
+
+
+func populate_debug_grid() -> void:
+	get_debug_grid().clear()
+	if not GlobalSettings.get_setting("debug"): return
+	for i in range(max_x - min_x + 3):
+		for j in range(max_y - min_y + 3):
+			var x = i+min_x-1
+			var y = j+min_y-1
+			var v = Vector2i(x, y)
+			get_debug_grid().set_cell(v, 0, Vector2i(0, 0))
+			var tag = Label.new()
+			tag.text = str(x) + "," + str(y)
+			tag.position = get_carpet_floor().map_to_local(v) + Vector2(-5, -5)
+			tag.modulate = Color(0, 0, 0, 1)
+			# var font = tag.get_theme_font("font")
+			tag.add_theme_font_size_override("font_size", 5)
+			get_debug_grid_labels().add_child(tag)

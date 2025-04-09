@@ -4,11 +4,12 @@ extends Node2D
 
 # const map_ = preload("res://scripts/utils/map_utils.gd")
 
-var state = 0
+var state = -1
 var state_start_time = 0
 # 0 - idle
 # 1 - moving
 # 2 - interacting
+# 3 - idle wander
 
 @export var idle_time: int = 500
 
@@ -18,8 +19,21 @@ var cur_task: Task = null
 var queued_interaction_time: int = 0
 var queued_interaction_obj: WorldObject = null
 var queued_interaction_type: int = -1
+var interact_after_move: bool = false
+
+var _id = 0
+var _name = "elf"
+
+func get_agent_id() -> int:
+	return _id
+func get_agent_name() -> String:
+	return _name
+func get_tile() -> Vector2i:
+	return cur
 
 @export var speed: float = 200.0
+@export var idle_wander_speed: float = 100.0
+var cur_speed = speed
 
 func map():
 	return get_node("/root/Main").get_map()
@@ -35,7 +49,7 @@ func _physics_move_agent(delta) -> bool:
 	var next_pos = map().get_world_pos(path[0])
 	var move_dir = (next_pos - cur_pos).normalized()
 	var distance = (next_pos - cur_pos).length()
-	var move_distance = speed * delta
+	var move_distance = cur_speed * delta
 	if distance <= move_distance:
 		position = next_pos
 		cur = path.pop_at(0)
@@ -49,7 +63,7 @@ func _tp(tgt: Vector2i) -> void:
 
 func start_tasks() -> void:
 	state_start_time = Time.get_ticks_msec()
-	_tp(map().spawn_point)
+	_tp(cur)
 	state = 0
 	toggleDialog(true)
 
@@ -64,11 +78,15 @@ func default_idle_state() -> void:
 func state_transition() -> void:
 	state_start_time = Time.get_ticks_msec()
 	if cur_task == null:
-		cur_task = taskmgr().get_task()
+		cur_task = taskmgr().get_task(self)
 		if cur_task == null:
-			print("No task available")
-			default_idle_state()
+			queue_idle_wander()
 			return
+	if state == 1 and interact_after_move:
+		interact_after_move = false
+		state = 2
+		return
+
 	if cur_task.start_task():
 		cur_task.get_next_subtask()
 	if cur_task.finished():
@@ -80,7 +98,7 @@ func state_transition() -> void:
 		if subtask.get_subtask_type() == subtask.SubtaskType.MOVE_TO:
 			state = 1
 		elif subtask.get_subtask_type() == subtask.SubtaskType.INTERACT:
-			state = 2
+			state = 1
 		else:
 			print("Unknown subtask type")
 			default_idle_state()
@@ -89,6 +107,25 @@ func state_transition() -> void:
 
 	render_interact()
 	toggleDialog(state == 0)
+
+func get_closest_to_object(obj: WorldObject, interaction_type) -> Vector2i:
+	var closest = null
+	var closest_dist = 9999999
+	for tile in obj.get_tiles_for_interaction(interaction_type):
+		var dist = map().get_distance(cur, tile)
+		if dist > -1 and dist < closest_dist:
+			closest = tile
+			closest_dist = dist
+	return closest
+
+func queue_idle_wander() -> void:
+	print("Idle wander :) No tasks")
+	queue_move_to(map().get_random_open_tile())
+	cur_speed = idle_wander_speed
+	default_idle_state()
+	state = 3
+	
+
 
 func queue_interact(obj: WorldObject, interaction_type) -> bool:
 	print("Interacting with ", obj.get_obj_name(), obj.get_obj_id(), " ", interaction_type)
@@ -99,15 +136,25 @@ func queue_interact(obj: WorldObject, interaction_type) -> bool:
 
 	queued_interaction_obj = obj
 	queued_interaction_type = interaction_type
-	path = []
-	return true
+
+	var found = queue_move_to(get_closest_to_object(obj, interaction_type))
+	if found:
+		interact_after_move = true
+	return found
+
 func queue_move_to(target: Vector2i) -> bool:
+	if target == null:
+		print("No target")
+		return false
 	print("Moving to ", target)
-	path = map().get_astar(cur, target)
+	cur_speed = speed
+	path = map().get_tile_path(cur, target)
 	return path.size() > 0
 
 func _physics_process(delta: float) -> void:
 	match state:
+		-1: 
+			return
 		0: # idle, Check if the agent is idle for too long
 			if Time.get_ticks_msec() - state_start_time > idle_time:
 				state_transition()
@@ -121,6 +168,11 @@ func _physics_process(delta: float) -> void:
 			if Time.get_ticks_msec() - state_start_time > queued_interaction_time:
 				trigger_interact()
 				state_transition()
+			return
+		3:
+			if _physics_move_agent(delta):
+				state = 0
+				state_start_time = Time.get_ticks_msec()
 			return
 		_:
 			print("ERRR")
@@ -142,7 +194,6 @@ func trigger_interact() -> void:
 		return
 
 	queued_interaction_obj.interact(self, queued_interaction_type)
-
 	queued_interaction_obj = null
 	queued_interaction_type = -1
 
@@ -150,7 +201,6 @@ func get_inventory():
 	return $GenericInventory
 func get_progress_bar():
 	return $ProgressBar
-
 func get_inventory_counter():
 	return $TEST_ITEM_COUNTER
 func _on_inventory_changed():
