@@ -57,8 +57,19 @@ func start_tasks() -> void:
 	state = 0
 	toggleDialog(true)
 
+func get_status_dialog(): return $StatusDialog
+
+func _render_dialog_state() -> void:
+	for dialog in get_status_dialog().get_children():
+		dialog.visible = false
+	if state == 0:
+		get_status_dialog().get_node("thinking").visible = true
+	elif state == 3:
+		get_status_dialog().get_node("wandering").visible = true
+
 func toggleDialog(en: bool):
-	$StatusDialog.visible = en
+	get_status_dialog().visible = en
+		
 
 func default_idle_state() -> void:
 	state = 0
@@ -91,7 +102,6 @@ func state_transition() -> void:
 			state = 1
 		else:
 			print("Unknown subtask type")
-			default_idle_state()
 			return
 		subtask.agent_execute(self)
 
@@ -103,8 +113,9 @@ func queue_idle_wander() -> void:
 	id_print("Idle wander :) No tasks")
 	queue_move_to(KeyNodes.map().get_random_open_tile())
 	cur_speed = idle_wander_speed
-	default_idle_state()
 	state = 3
+	render_interact()
+	_render_dialog_state()
 	
 
 
@@ -157,6 +168,7 @@ func _physics_process(delta: float) -> void:
 			if _physics_move_agent(delta):
 				state = 0
 				state_start_time = Time.get_ticks_msec()
+				_render_dialog_state()
 			return
 		_:
 			print("ERRR")
