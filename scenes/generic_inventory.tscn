@@ -1,12 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://n8dw8m0xg3el"]
+[gd_scene load_steps=2 format=3 uid="uid://n8dw8m0xg3el"]
 
 [ext_resource type="Script" uid="uid://dwswna3xh2un2" path="res://scripts/generic_inventory.gd" id="1_hjhy4"]
-[ext_resource type="PackedScene" uid="uid://cnibuxvqxhtmw" path="res://scenes/generic_item.tscn" id="2_8wsk6"]
 
 [node name="GenericInventory" type="Node2D"]
 script = ExtResource("1_hjhy4")
-
-[node name="GenericItem" parent="." instance=ExtResource("2_8wsk6")]
 
 [node name="TEST_ITEM_COUNTER" type="Label" parent="."]
 offset_left = 7.0

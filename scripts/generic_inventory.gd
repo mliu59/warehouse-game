@@ -18,7 +18,24 @@ func update_counter() -> void:			get_counter().set_text(str(get_inventory_size()
 
 func _inventory_changed() -> void:
 	inventory_changed.emit()
+	render_inventory()
+
+func _hide_all_items() -> void:
+	for item in get_children():
+		if item is GenericItem:
+			item.visible = false
+func _render_first_item() -> void:
+	for item in get_children():
+		if item is GenericItem:
+			item.visible = true
+			return
+
+func render_inventory() -> void:
 	update_counter()
+	_hide_all_items()
+	if get_parent().show_items() and not is_empty():
+		_render_first_item()
+
 
 func add_item(obj: GenericItem) -> bool:
 	var id = obj.get_id()

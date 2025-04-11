@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://cnibuxvqxhtmw"]
+[gd_scene load_steps=3 format=3 uid="uid://cnibuxvqxhtmw"]
 
 [ext_resource type="Script" uid="uid://b66vvepsihlk5" path="res://scripts/generic_item.gd" id="1_msjdp"]
+[ext_resource type="Texture2D" uid="uid://ym4f4lcuh8jt" path="res://assets/placeholder/items/placeholder_items.png" id="2_egna1"]
 
-[node name="GenericItem" type="Node"]
+[node name="GenericItem" type="Node2D"]
 script = ExtResource("1_msjdp")
+
+[node name="sprite" type="Sprite2D" parent="."]
+position = Vector2(5, 5)
+texture = ExtResource("2_egna1")

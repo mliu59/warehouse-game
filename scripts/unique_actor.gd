@@ -21,7 +21,10 @@ func set_u_name(input: String) -> void:		_name = input
 
 func get_inventory():						return $GenericInventory	
 
+var _show_items: bool = true
+func show_items() -> bool:					return _show_items
 func init_unique_actor() -> void:
+	if self is WorldObject:		_show_items = false
 	IdManager.assign_id(self)
 	if not has_node("GenericInventory"):
 		var inventory_obj = load("res://scenes/generic_inventory.tscn").instantiate()

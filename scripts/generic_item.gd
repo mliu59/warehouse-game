@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 class_name GenericItem
 
 @export var item_id: String = "%TEST_ITEM%"
