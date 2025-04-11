@@ -72,10 +72,10 @@ func transfer_item_to(target:GenericInventory, id: String, qty:int) -> bool:
 	for item in items:
 		if not target.add_item(item):
 			add_item(item)
-			print("Failed to transfer item, adding back to source inventory")
+			get_parent().id_print("Failed to transfer item, adding back to source inventory")
 			return false
-	print("Transferred ", qty, " items of id ", id, " to target inventory")
-	print("Source inventory size: ", inventory_size, " Target inventory size: ", target.inventory_size)
+	get_parent().id_print("Transferred "+str(qty)+" items of id "+id+" to target inventory")
+	get_parent().id_print("Source inventory size: "+str(inventory_size)+" Target inventory size: "+str(target.inventory_size))
 	return true
 
 
@@ -94,5 +94,3 @@ func claim_item(id: String, _agent: Agent) -> bool:
 		if item.claim_item(_agent):
 			return true
 	return false
-
-

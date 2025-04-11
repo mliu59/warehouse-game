@@ -71,5 +71,4 @@ func add_world_object(type: String, tile: Vector2i) -> WorldObject:
 
 func render_objects() -> void:
 	for obj in obj_map.values():
-		print(obj)
 		obj.render()

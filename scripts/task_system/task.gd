@@ -24,18 +24,18 @@ func started() -> bool:
 
 func start_task() -> bool:
 	if not started():
-		print("Task started")
+		# print("Task started")
 		current_task_index_ = 0
 		return false
 	return true
 	
 func get_current_subtask() -> Subtask:
-	print("Current subtask: ", current_task_index_)
+	# print("Current subtask: ", current_task_index_)
 	return subtasks_[current_task_index_]
 
 # Returns true if there are more subtasks to execute
 func get_next_subtask() -> bool:
-	print("Next subtask, incrementing index")
+	# print("Next subtask, incrementing index")
 	subtasks_status_[current_task_index_] = true
 	current_task_index_ += 1
 	return current_task_index_ < subtasks_.size()

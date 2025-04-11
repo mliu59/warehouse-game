@@ -92,11 +92,11 @@ func interact(agent: Agent, interaction_type) -> bool:
 	var source = null
 	var target = null
 	if interaction_type == OBJ_INTERACTION_TYPE.RETRIEVE_ITEM:
-		print("Retrieving item from ", get_u_name())
+		id_print("Retrieving item from me")
 		source = get_inventory()
 		target = agent.get_inventory()
 	elif interaction_type == OBJ_INTERACTION_TYPE.DEPOSIT_ITEM:
-		print("Depositing item to ", get_u_name())
+		id_print("Depositing item to me")
 		source = agent.get_inventory()
 		target = get_inventory()
 	else:
@@ -106,7 +106,7 @@ func interact(agent: Agent, interaction_type) -> bool:
 	return source.transfer_item_to(target, "%TEST_ITEM%", 1)
 
 func _destroy() -> void:
-	print("Destroying object: ", get_u_name(), " ", get_u_id())
+	id_print("Destroying object")
 	KeyNodes.objMgr().remove_world_object(self)
 
 func _on_inventory_changed():

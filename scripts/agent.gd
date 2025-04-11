@@ -27,6 +27,10 @@ var cur_speed = speed
 
 func _init() -> void:
 	init_unique_actor()
+	_config_agent()
+
+func _config_agent() -> void:
+	set_u_name("Elf")
 
 func _physics_move_agent(delta) -> bool:
 	var cur_pos = position
@@ -76,7 +80,7 @@ func state_transition() -> void:
 	if cur_task.start_task():
 		cur_task.get_next_subtask()
 	if cur_task.finished():
-		print("Task finished")
+		id_print("Task finished")
 		cur_task = null
 		state = 0
 	else:
@@ -96,7 +100,7 @@ func state_transition() -> void:
 
 
 func queue_idle_wander() -> void:
-	print("Idle wander :) No tasks")
+	id_print("Idle wander :) No tasks")
 	queue_move_to(KeyNodes.map().get_random_open_tile())
 	cur_speed = idle_wander_speed
 	default_idle_state()
@@ -105,7 +109,7 @@ func queue_idle_wander() -> void:
 
 
 func queue_interact(obj: WorldObject, interaction_type) -> bool:
-	print("Interacting with ", obj.get_u_name(), obj.get_u_id(), " ", interaction_type)
+	id_print("Interacting with "+obj.debug_str()+" "+str(interaction_type))
 	# get interaction time, based on the object and interaction type
 	queued_interaction_time = obj.get_time_for_interaction(interaction_type)
 	get_progress_bar().max_value = queued_interaction_time
@@ -125,7 +129,7 @@ func queue_move_to(target: Vector2i) -> bool:
 	if target == null:
 		print("No target")
 		return false
-	print("Moving to ", target)
+	id_print("Moving to " + str(target))
 	cur_speed = speed
 	path = KeyNodes.map().get_tile_path(get_tile(), target)
 	debug_draw_path()
@@ -159,7 +163,6 @@ func _physics_process(delta: float) -> void:
 
 func render_interact():
 	if state == 2:
-		#print(float(Time.get_ticks_msec() - state_start_time) / queued_interaction_time)
 		get_progress_bar().value = float(Time.get_ticks_msec() - state_start_time)
 		get_progress_bar().visible = true
 	else:

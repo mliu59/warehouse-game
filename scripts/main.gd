@@ -10,7 +10,7 @@ func _ready() -> void:
 	
 	# generate map
 	KeyNodes.map().generate_map()
-	get_camera().center_camera_for_map(KeyNodes.map())
+	KeyNodes.camera().center_camera_for_map(KeyNodes.map())
 
 	# generate static objs
 	KeyNodes.objMgr().clear_objs()
@@ -33,4 +33,4 @@ func _ready() -> void:
 
 	KeyNodes.agentMgr().start_tasks()
 
-func get_camera() -> Node: return $MainCamera2D
+
