@@ -4,18 +4,13 @@ const task_ = preload("res://scripts/task_system/task.gd")
 
 var task_queue: Array = []
 
-func map():
-	return get_node("/root/Main").get_map()
-func objMgr():
-	return get_node("/root/Main").get_object_manager()
-
 func find_world_object(objects: Array, criteria_func: Callable, _agent: Agent, _closest: bool = true) -> WorldObject:
 	var outputs = []
 	for obj_name in objects:
-		var obj_count = objMgr().get_object_count(obj_name)
+		var obj_count = KeyNodes.objMgr().get_object_count(obj_name)
 		for i in range(obj_count):
-			var obj = objMgr().get_object_by_index(obj_name, i)
-			if obj != null and criteria_func.call(obj):
+			var obj = KeyNodes.objMgr().get_object_by_index(obj_name, i)
+			if obj != null and criteria_func.call(obj, _agent):
 				outputs.append(obj)
 	if outputs.size() > 0:
 		if not _closest: 		return outputs[0]
@@ -25,7 +20,7 @@ func find_world_object(objects: Array, criteria_func: Callable, _agent: Agent, _
 		var min_dist = 9999999
 		for i in range(outputs.size()):
 			var obj = outputs[i]
-			var dist = map().get_distance(obj.get_tile(), agent_pos)
+			var dist = KeyNodes.map().get_distance(obj.get_tile(), agent_pos)
 			if dist > 0 and dist < min_dist:
 				min_dist = dist
 				ind = i
@@ -34,16 +29,18 @@ func find_world_object(objects: Array, criteria_func: Callable, _agent: Agent, _
 	# if no objects found, return null
 	return null
 
-func _criteria_func_is_empty(obj) -> bool:
-	return not obj.get_inventory().is_empty()
+func _criteria_func_agent_can_retrieve(obj, _agent) -> bool:
+	return 	KeyNodes.map().get_distance(obj.get_tile(), _agent.get_tile()) > 0 and \
+			obj.get_inventory().has_claimable_items("%TEST_ITEM%")
+
 func get_global_task(_agent: Agent) -> Task:
 	var _SRC_OBJECTS = [
 		"source_box",
 		"item_pile",
 	]
-	var src = find_world_object(_SRC_OBJECTS, _criteria_func_is_empty, _agent)
+	var src = find_world_object(_SRC_OBJECTS, _criteria_func_agent_can_retrieve, _agent)
 	if src == null: return null
-	var tgt = objMgr().get_object_by_index("target_box")
+	var tgt = KeyNodes.objMgr().get_object_by_index("target_box")
 	var task = task_.new()
 	task.initialize_test_task(src, tgt)
 	return task

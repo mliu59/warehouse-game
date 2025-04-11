@@ -22,6 +22,8 @@ func _has_v(v: Vector2i) -> bool:
 func get_distance(start: Vector2i, end: Vector2i) -> int:
 	# Returns the distance between two points using A* algorithm.
 	# If no path is found, returns -1.
+	if not _has_v(start) or not _has_v(end):
+		return -1
 	var path = get_point_path(flatten_vector2i(start), flatten_vector2i(end))
 	if path.size() == 0:
 		return -1

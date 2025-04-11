@@ -1,5 +1,6 @@
 extends Node
 
+@export var _use_scene: bool = true
 @export var _map_width: int = 20
 @export var _map_height: int = 20
 
@@ -13,33 +14,22 @@ var map_x_size_pixels: int = 0
 var map_y_size_pixels: int = 0
 var map_center_pixels: Vector2 = Vector2(0, 0)
 
-
-func get_object_manager():
-	return $ObjectManager
-func get_carpet_floor():
-	return $Floor
-func get_walls():
-	return $Walls
-func get_debug_grid() -> TileMapLayer:
-	return $Debug/Grid
-func get_debug_grid_labels():
-	return $Debug/GridLabels
+func get_carpet_floor():					return $Floor
+func get_walls():							return $Walls
+func get_debug_grid():						return $Debug/Grid
+func get_debug_grid_labels():				return $Debug/GridLabels
 
 func clear_map() -> void:
-	get_object_manager().clear_objs()
+	KeyNodes.objMgr().clear_objs()
 	for child in get_children():
 		if is_instance_of(child, TileMapLayer):
 			child.clear()
 
 func _update_map_lims(v: Vector2i) -> void:
-	if v.x < min_x:
-		min_x = v.x
-	if v.x > max_x:
-		max_x = v.x
-	if v.y < min_y:
-		min_y = v.y
-	if v.y > max_y:
-		max_y = v.y
+	if v.x < min_x:	min_x = v.x
+	if v.x > max_x:	max_x = v.x
+	if v.y < min_y:	min_y = v.y
+	if v.y > max_y:	max_y = v.y
 func _calc_map_lims() -> void:
 	var tile_size = get_carpet_floor().tile_set.tile_size
 	var x = max_x - min_x + 1
@@ -58,25 +48,32 @@ func disable_diagonal_traversal(v: Vector2i):
 		var t2 = get_neighbor_cell(v, MapUtils.ADJ_TILES[(i+1)%4])
 		astar.disconnect_pts(t1, t2)
 
-func generate_map() -> void:
-	clear_map()
+func generate_map_tiles() -> Array[Vector2i]:
 	var _tiles: Array[Vector2i] = []
-
-	var clear_tiles = [
-		Vector2i(1, 6), Vector2i(6, 2), Vector2i(5, 5)
-	]
-
-	# generate traversable map
+	var clear_tiles = [Vector2i(1, 6), Vector2i(6, 2), Vector2i(5, 5)]
 	for x in range(_map_width):
 		for y in range(_map_height):
 			var v = Vector2i(x+1, y+1)
 			if v in clear_tiles: continue
 			_tiles.append(v)
-			astar.add_pt(v)
+	return _tiles
+
+func generate_map() -> void:
+	var _tiles: Array[Vector2i] = []
+
+	if not _use_scene:
+		_tiles = generate_map_tiles()
+	else:
+		var walls = get_walls().get_used_cells()
+		for tile in get_carpet_floor().get_used_cells():
+			if tile.x < 1 or tile.y < 1: continue
+			if tile in walls: continue
+			_tiles.append(tile)
+	clear_map()
 	
+	for tile in _tiles: 	astar.add_pt(tile)
 	# generate astar map
-	for tile in _tiles:
-		astar.connect_pt_to_all_neighbors(tile, get_carpet_floor())
+	for tile in _tiles:		astar.connect_pt_to_all_neighbors(tile, get_carpet_floor())
 
 	# generate walls: any tile adjacent to a map tile without itself being a map tile (borders of map)
 	var _walls: Array[Vector2i] = []
@@ -85,13 +82,10 @@ func generate_map() -> void:
 		for wall in potential_walls:
 			if not astar.pt_open(wall):
 				_walls.append(wall)
-				# do not allow diagonal traversal across walls
-				disable_tile(wall)
+				disable_tile(wall) # do not allow diagonal traversal across walls
 
-	for tile in _tiles:
-		_update_map_lims(tile)
-	for wall in _walls:
-		_update_map_lims(wall)
+	for tile in _tiles:		_update_map_lims(tile)
+	for wall in _walls:		_update_map_lims(wall)
 	_calc_map_lims()
 	
 	get_carpet_floor().set_cells_terrain_connect(_tiles, 0, 0, false)
@@ -126,7 +120,6 @@ func get_random_open_tile() -> Vector2i:
 
 func populate_debug_grid() -> void:
 	get_debug_grid().clear()
-	if not GlobalSettings.get_setting("debug"): return
 	for i in range(max_x - min_x + 3):
 		for j in range(max_y - min_y + 3):
 			var x = i+min_x-1

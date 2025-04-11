@@ -1,6 +1,5 @@
 class_name Agent
-
-extends Node2D
+extends UniqueActor
 
 # const map_ = preload("res://scripts/utils/map_utils.gd")
 
@@ -12,8 +11,9 @@ var state_start_time = 0
 # 3 - idle wander
 
 @export var idle_time: int = 500
+@export var start_tile: Vector2i = Vector2i(0, 0)
+@export var debug_color: Color = Color(1, 0, 0, 1)
 
-var cur = Vector2i(0, 0)
 var path: Array[Vector2i] = []
 var cur_task: Task = null
 var queued_interaction_time: int = 0
@@ -21,49 +21,35 @@ var queued_interaction_obj: WorldObject = null
 var queued_interaction_type: int = -1
 var interact_after_move: bool = false
 
-var _id = 0
-var _name = "elf"
-
-func get_agent_id() -> int:
-	return _id
-func get_agent_name() -> String:
-	return _name
-func get_tile() -> Vector2i:
-	return cur
-
 @export var speed: float = 200.0
 @export var idle_wander_speed: float = 100.0
 var cur_speed = speed
 
-func map():
-	return get_node("/root/Main").get_map()
-func objMgr():
-	return get_node("/root/Main").get_object_manager()
-func taskmgr():
-	return get_node("/root/Main").get_task_manager()
+func _init() -> void:
+	init_unique_actor()
 
 func _physics_move_agent(delta) -> bool:
 	var cur_pos = position
 	if path.size() == 0:
 		return true
-	var next_pos = map().get_world_pos(path[0])
+	var next_pos = KeyNodes.map().get_world_pos(path[0])
 	var move_dir = (next_pos - cur_pos).normalized()
 	var distance = (next_pos - cur_pos).length()
 	var move_distance = cur_speed * delta
 	if distance <= move_distance:
 		position = next_pos
-		cur = path.pop_at(0)
+		set_tile(path.pop_at(0))
 		return path.size() == 0
 	position += move_dir * move_distance
 	return false
 
 func _tp(tgt: Vector2i) -> void:
-	cur = tgt
-	position = map().get_world_pos(cur)
+	set_tile(tgt)
+	position = KeyNodes.map().get_world_pos(get_tile())
 
 func start_tasks() -> void:
 	state_start_time = Time.get_ticks_msec()
-	_tp(cur)
+	_tp(get_tile())
 	state = 0
 	toggleDialog(true)
 
@@ -78,7 +64,7 @@ func default_idle_state() -> void:
 func state_transition() -> void:
 	state_start_time = Time.get_ticks_msec()
 	if cur_task == null:
-		cur_task = taskmgr().get_task(self)
+		cur_task = KeyNodes.taskMgr().get_task(self)
 		if cur_task == null:
 			queue_idle_wander()
 			return
@@ -108,19 +94,10 @@ func state_transition() -> void:
 	render_interact()
 	toggleDialog(state == 0)
 
-func get_closest_to_object(obj: WorldObject, interaction_type) -> Vector2i:
-	var closest = null
-	var closest_dist = 9999999
-	for tile in obj.get_tiles_for_interaction(interaction_type):
-		var dist = map().get_distance(cur, tile)
-		if dist > -1 and dist < closest_dist:
-			closest = tile
-			closest_dist = dist
-	return closest
 
 func queue_idle_wander() -> void:
 	print("Idle wander :) No tasks")
-	queue_move_to(map().get_random_open_tile())
+	queue_move_to(KeyNodes.map().get_random_open_tile())
 	cur_speed = idle_wander_speed
 	default_idle_state()
 	state = 3
@@ -128,7 +105,7 @@ func queue_idle_wander() -> void:
 
 
 func queue_interact(obj: WorldObject, interaction_type) -> bool:
-	print("Interacting with ", obj.get_obj_name(), obj.get_obj_id(), " ", interaction_type)
+	print("Interacting with ", obj.get_u_name(), obj.get_u_id(), " ", interaction_type)
 	# get interaction time, based on the object and interaction type
 	queued_interaction_time = obj.get_time_for_interaction(interaction_type)
 	get_progress_bar().max_value = queued_interaction_time
@@ -137,9 +114,11 @@ func queue_interact(obj: WorldObject, interaction_type) -> bool:
 	queued_interaction_obj = obj
 	queued_interaction_type = interaction_type
 
-	var found = queue_move_to(get_closest_to_object(obj, interaction_type))
+	var found = queue_move_to(obj.get_closest_interaction_tile(get_tile(), interaction_type))
 	if found:
 		interact_after_move = true
+		# if interaction_type == obj.OBJ_INTERACTION_TYPE.RETRIEVE_ITEM:
+			# found = obj.get_inventory().claim_item("%TEST_ITEM%", self)
 	return found
 
 func queue_move_to(target: Vector2i) -> bool:
@@ -148,7 +127,8 @@ func queue_move_to(target: Vector2i) -> bool:
 		return false
 	print("Moving to ", target)
 	cur_speed = speed
-	path = map().get_tile_path(cur, target)
+	path = KeyNodes.map().get_tile_path(get_tile(), target)
+	debug_draw_path()
 	return path.size() > 0
 
 func _physics_process(delta: float) -> void:
@@ -197,11 +177,14 @@ func trigger_interact() -> void:
 	queued_interaction_obj = null
 	queued_interaction_type = -1
 
-func get_inventory():
-	return $GenericInventory
-func get_progress_bar():
-	return $ProgressBar
-func get_inventory_counter():
-	return $TEST_ITEM_COUNTER
-func _on_inventory_changed():
-	get_inventory_counter().set_text(str(get_inventory().get_inventory_size()))
+func get_progress_bar():			return $ProgressBar
+func get_debug_path_line2d():		return $Debug/PathNode/Path
+
+func debug_draw_path():
+	var path_line = get_debug_path_line2d()
+	path_line.clear_points()
+	for i in range(path.size()):
+		var tile = path[i]
+		var world_pos = KeyNodes.map().get_world_pos(tile)
+		path_line.add_point(world_pos)
+	path_line.default_color = debug_color

@@ -12,16 +12,12 @@ var world_object_dict: Dictionary = {}
 func _init() -> void:
 	for world_object in WORLD_OBJECTS:
 		var obj = load(world_object).instantiate()
-		world_object_dict[obj.get_obj_name()] = world_object
+		world_object_dict[obj.get_u_name()] = world_object
 		obj.queue_free()
-
 
 var obj_map: Dictionary = {}
 var obj_type_map: Dictionary = {}
 var running_id_counter: int = 0
-
-func map():
-	return get_node("/root/Main").get_map()
 
 func add_object(obj: WorldObject, type: String) -> void:
 	add_child(obj)
@@ -31,7 +27,7 @@ func add_object(obj: WorldObject, type: String) -> void:
 	else:
 		obj_type_map[type] = {obj.get_tile(): obj}
 	obj.init()
-	obj._id = running_id_counter
+	obj.set_u_id(running_id_counter)
 	running_id_counter += 1
 
 func get_object_count(type: String) -> int:
@@ -48,10 +44,10 @@ func get_object_by_index(type: String, index: int = 0) -> WorldObject:
 func remove_world_object(obj: WorldObject) -> void:
 	if obj_map.has(obj.get_tile()):
 		obj_map.erase(obj.get_tile())
-		if obj_type_map.has(obj.get_obj_name()):
-			obj_type_map[obj.get_obj_name()].erase(obj.get_tile())
+		if obj_type_map.has(obj.get_u_name()):
+			obj_type_map[obj.get_u_name()].erase(obj.get_tile())
 		obj.queue_free()
-		map().enable_tile(obj.get_tile())
+		KeyNodes.map().enable_tile(obj.get_tile())
 	else:
 		print("Object not found in map")
 
@@ -65,7 +61,7 @@ func clear_objs() -> void:
 func add_world_object(type: String, tile: Vector2i) -> WorldObject:
 	if world_object_dict.has(type):
 		var obj = load(world_object_dict[type]).instantiate()
-		obj.pos_ = tile
+		obj.set_tile(tile)
 		add_object(obj, type)
 		return obj
 	else:
@@ -75,4 +71,5 @@ func add_world_object(type: String, tile: Vector2i) -> WorldObject:
 
 func render_objects() -> void:
 	for obj in obj_map.values():
+		print(obj)
 		obj.render()
