@@ -189,4 +189,8 @@ script = ExtResource("8_85g3d")
 position = Vector2(136, 104)
 start_tile = Vector2i(2, 2)
 
+[node name="Elf2" parent="AgentManager" instance=ExtResource("10_choun")]
+start_tile = Vector2i(6, 6)
+debug_color = Color(0.269139, 0.509151, 0.975221, 1)
+
 [node name="GUI" type="CanvasLayer" parent="."]
