@@ -21,6 +21,11 @@ GlobalSettings="*res://scripts/global/global_settings.gd"
 MapUtils="*res://scripts/utils/map/map_utils.gd"
 IdManager="*res://scripts/id_manager.gd"
 KeyNodes="*res://scripts/global/key_nodes.gd"
+ObjInteractionConsts="*res://scripts/task_system/interaction_consts.gd"
+
+[debug]
+
+gdscript/warnings/integer_division=0
 
 [dotnet]
 

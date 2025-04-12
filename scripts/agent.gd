@@ -57,19 +57,7 @@ func start_tasks() -> void:
 	state = 0
 	toggleDialog(true)
 
-func get_status_dialog(): return $StatusDialog
 
-func _render_dialog_state() -> void:
-	for dialog in get_status_dialog().get_children():
-		dialog.visible = false
-	if state == 0:
-		get_status_dialog().get_node("thinking").visible = true
-	elif state == 3:
-		get_status_dialog().get_node("wandering").visible = true
-
-func toggleDialog(en: bool):
-	get_status_dialog().visible = en
-		
 
 func default_idle_state() -> void:
 	state = 0
@@ -79,13 +67,14 @@ func default_idle_state() -> void:
 func state_transition() -> void:
 	state_start_time = Time.get_ticks_msec()
 	if cur_task == null:
-		cur_task = KeyNodes.taskMgr().get_task(self)
+		cur_task = KeyNodes.taskMgr().get_available_task(self)
 		if cur_task == null:
 			queue_idle_wander()
 			return
 	if state == 1 and interact_after_move:
 		interact_after_move = false
 		state = 2
+		render_interact()
 		return
 
 	if cur_task.start_task():
@@ -96,17 +85,17 @@ func state_transition() -> void:
 		state = 0
 	else:
 		var subtask = cur_task.get_current_subtask()
-		if subtask.get_subtask_type() == subtask.SubtaskType.MOVE_TO:
-			state = 1
-		elif subtask.get_subtask_type() == subtask.SubtaskType.INTERACT:
-			state = 1
-		else:
-			print("Unknown subtask type")
-			return
-		subtask.agent_execute(self)
+		state = 1
+		subtask.agent_queue_execute(self)
 
 	render_interact()
 	toggleDialog(state == 0)
+
+
+func set_interaction_time(time: int) -> void:
+	queued_interaction_time = time
+	get_progress_bar().max_value = queued_interaction_time
+	get_progress_bar().value = (0)
 
 
 func queue_idle_wander() -> void:
@@ -116,25 +105,6 @@ func queue_idle_wander() -> void:
 	state = 3
 	render_interact()
 	_render_dialog_state()
-	
-
-
-func queue_interact(obj: WorldObject, interaction_type) -> bool:
-	id_print("Interacting with "+obj.debug_str()+" "+str(interaction_type))
-	# get interaction time, based on the object and interaction type
-	queued_interaction_time = obj.get_time_for_interaction(interaction_type)
-	get_progress_bar().max_value = queued_interaction_time
-	get_progress_bar().value = (0)
-
-	queued_interaction_obj = obj
-	queued_interaction_type = interaction_type
-
-	var found = queue_move_to(obj.get_closest_interaction_tile(get_tile(), interaction_type))
-	if found:
-		interact_after_move = true
-		# if interaction_type == obj.OBJ_INTERACTION_TYPE.RETRIEVE_ITEM:
-			# found = obj.get_inventory().claim_item("%TEST_ITEM%", self)
-	return found
 
 func queue_move_to(target: Vector2i) -> bool:
 	if target == null:
@@ -161,10 +131,11 @@ func _physics_process(delta: float) -> void:
 		2: # interacting, Interact with the object
 			render_interact()
 			if Time.get_ticks_msec() - state_start_time > queued_interaction_time:
-				trigger_interact()
+				cur_task.get_current_subtask().execute_interact()
 				state_transition()
 			return
 		3:
+			# return
 			if _physics_move_agent(delta):
 				state = 0
 				state_start_time = Time.get_ticks_msec()
@@ -172,25 +143,9 @@ func _physics_process(delta: float) -> void:
 			return
 		_:
 			print("ERRR")
+	return
 
-func render_interact():
-	if state == 2:
-		get_progress_bar().value = float(Time.get_ticks_msec() - state_start_time)
-		get_progress_bar().visible = true
-	else:
-		get_progress_bar().visible = false
 
-func trigger_interact() -> void:
-	if queued_interaction_obj == null:
-		print("No object to interact with")
-		return
-	if queued_interaction_type == -1:
-		print("No interaction type")
-		return
-
-	queued_interaction_obj.interact(self, queued_interaction_type)
-	queued_interaction_obj = null
-	queued_interaction_type = -1
 
 func get_progress_bar():			return $ProgressBar
 func get_debug_path_line2d():		return $Debug/PathNode/Path
@@ -203,3 +158,24 @@ func debug_draw_path():
 		var world_pos = KeyNodes.map().get_world_pos(tile)
 		path_line.add_point(world_pos)
 	path_line.default_color = debug_color
+
+
+func get_status_dialog(): return $StatusDialog
+
+func _render_dialog_state() -> void:
+	for dialog in get_status_dialog().get_children():
+		dialog.visible = false
+	if state == 0:
+		get_status_dialog().get_node("thinking").visible = true
+	elif state == 3:
+		get_status_dialog().get_node("wandering").visible = true
+
+func toggleDialog(en: bool):
+	get_status_dialog().visible = en
+
+func render_interact():
+	if state == 2:
+		get_progress_bar().value = float(Time.get_ticks_msec() - state_start_time)
+		get_progress_bar().visible = true
+	else:
+		get_progress_bar().visible = false

@@ -12,26 +12,19 @@ func get_cell_texture() -> Texture:
 	return ImageTexture.create_from_image(tile_image)
 
 
-enum OBJ_INTERACTION_TYPE {
-	USE,
-	EXAMINE,
-	RETRIEVE_ITEM,
-	DEPOSIT_ITEM
-}
-
 var allowed_interaction_types_: Array = [
-	OBJ_INTERACTION_TYPE.RETRIEVE_ITEM,
-	OBJ_INTERACTION_TYPE.DEPOSIT_ITEM
+	ObjInteractionConsts.TYPE.RETRIEVE_ITEM,
+	ObjInteractionConsts.TYPE.DEPOSIT_ITEM
 ]
 
 var interaction_directions_: Dictionary = {
-	OBJ_INTERACTION_TYPE.RETRIEVE_ITEM: MapUtils.ADJ_TILES_8,
-	OBJ_INTERACTION_TYPE.DEPOSIT_ITEM: MapUtils.ADJ_TILES_8
+	ObjInteractionConsts.TYPE.RETRIEVE_ITEM: MapUtils.ADJ_TILES_8,
+	ObjInteractionConsts.TYPE.DEPOSIT_ITEM: MapUtils.ADJ_TILES_8
 }
 
 var interaction_times_: Dictionary = {
-	OBJ_INTERACTION_TYPE.RETRIEVE_ITEM: 500,
-	OBJ_INTERACTION_TYPE.DEPOSIT_ITEM: 500
+	ObjInteractionConsts.TYPE.RETRIEVE_ITEM: 500,
+	ObjInteractionConsts.TYPE.DEPOSIT_ITEM: 500
 }
 
 var interactable_: bool = false
@@ -73,6 +66,8 @@ func render() -> void:
 	position = KeyNodes.map().get_world_pos(get_tile())
 	get_inventory().visible = not hide_inventory_
 
+func allows_interaction(interaction_type) -> bool:
+	return allowed_interaction_types_.has(interaction_type)
 
 func get_tiles_for_interaction(interaction_type) -> Array:
 	return MapUtils.get_neighbors(
@@ -80,30 +75,6 @@ func get_tiles_for_interaction(interaction_type) -> Array:
 
 func get_time_for_interaction(interaction_type) -> int:
 	return interaction_times_[interaction_type]
-
-func interact(agent: Agent, interaction_type) -> bool:
-	if not interactable_:
-		print("Object is not interactable")
-		return false
-	if not allowed_interaction_types_.has(interaction_type):
-		print("Interaction type not allowed")
-		return false
-	
-	var source = null
-	var target = null
-	if interaction_type == OBJ_INTERACTION_TYPE.RETRIEVE_ITEM:
-		id_print("Retrieving item from me")
-		source = get_inventory()
-		target = agent.get_inventory()
-	elif interaction_type == OBJ_INTERACTION_TYPE.DEPOSIT_ITEM:
-		id_print("Depositing item to me")
-		source = agent.get_inventory()
-		target = get_inventory()
-	else:
-		print("Unknown interaction type")
-		return false
-	
-	return source.transfer_item_to(target, "%TEST_ITEM%", 1)
 
 func _destroy() -> void:
 	id_print("Destroying object")

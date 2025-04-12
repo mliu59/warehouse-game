@@ -72,3 +72,31 @@ func add_world_object(type: String, tile: Vector2i) -> WorldObject:
 func render_objects() -> void:
 	for obj in obj_map.values():
 		obj.render()
+
+
+
+func find_reachable_world_object(obj_params: Dictionary, addn_params: Dictionary, _agent: Agent, any: bool) -> Array:
+	var outputs = []
+	var obj_list: Array = obj_params["actor_id"]
+	for obj_id in obj_list:
+		if obj_id not in obj_type_map: continue
+		for obj in obj_type_map[obj_id].values():
+			var interaction_type = addn_params["type"]
+			if not obj.allows_interaction(interaction_type): continue
+
+			if interaction_type in [ObjInteractionConsts.TYPE.RETRIEVE_ITEM]:
+				if not obj.get_inventory().has_claimable_items(addn_params["item_id"], addn_params['item_qty']): continue
+			
+			var tiles = obj.get_tiles_for_interaction(interaction_type)
+			var valid_tile: bool = false
+			for tile in tiles:
+				if KeyNodes.map().get_distance(tile, _agent.get_tile()) > 0:
+					valid_tile = true
+					break
+			if not valid_tile: continue
+
+			outputs.append(obj)
+			if any: return outputs
+	
+
+	return outputs

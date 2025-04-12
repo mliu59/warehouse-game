@@ -186,7 +186,7 @@ script = ExtResource("8_tipki")
 script = ExtResource("8_85g3d")
 
 [node name="Elf" parent="AgentManager" groups=["agents"] instance=ExtResource("10_choun")]
-position = Vector2(65, 163)
+position = Vector2(136, 104)
 start_tile = Vector2i(2, 2)
 
 [node name="GUI" type="CanvasLayer" parent="."]

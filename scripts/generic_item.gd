@@ -2,24 +2,18 @@ extends Node2D
 class_name GenericItem
 
 @export var item_id: String = "%TEST_ITEM%"
-@export var item_weight: int = 0
 
-var claimed_by_agent: Agent = null
+var reserved: bool = false
+var _task: Task = null
 
-func get_id() -> String:
+func get_item_id() -> String:
 	return item_id
 
-func get_weight() -> int:
-	return item_weight
-
-func is_claimed() -> bool:
-	return claimed_by_agent != null
-
-func claim_item(_agent: Agent) -> bool:
-	if claimed_by_agent == null:
-		claimed_by_agent = _agent
-		return true
-	return false
-
-func clear_claim() -> void:
-	claimed_by_agent = null
+func is_reserved() -> bool:
+	return reserved
+func set_reserved(_reserved: bool, task: Task) -> void:
+	reserved = _reserved
+	if reserved: _task = task
+	else: _task = null
+func get_reserved_task() -> Task:
+	return _task

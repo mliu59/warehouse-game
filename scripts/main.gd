@@ -18,18 +18,14 @@ func _ready() -> void:
 	KeyNodes.objMgr().add_world_object("target_box", test_target)
 	KeyNodes.objMgr().add_world_object("item_pile", Vector2i(4, 3))
 	KeyNodes.objMgr().add_world_object("item_pile", Vector2i(9, 2))
+	KeyNodes.objMgr().add_world_object("item_pile", Vector2i(16, 1))
 	KeyNodes.objMgr().render_objects()
 
 	#populate inventories
-	for i in range(3):
-		var item = load("res://scenes/generic_item.tscn").instantiate()
-		KeyNodes.objMgr().get_object_by_index("source_box").get_inventory().add_item(item)
-	for i in range(3):
-		var item = load("res://scenes/generic_item.tscn").instantiate()
-		KeyNodes.objMgr().get_object_by_index("item_pile", 0).get_inventory().add_item(item)
-	for i in range(3):
-		var item = load("res://scenes/generic_item.tscn").instantiate()
-		KeyNodes.objMgr().get_object_by_index("item_pile", 1).get_inventory().add_item(item)
+	KeyNodes.objMgr().get_object_by_index("source_box").get_inventory().spawn_items("%TEST_ITEM%", 1)
+	KeyNodes.objMgr().get_object_by_index("item_pile", 0).get_inventory().spawn_items("%TEST_ITEM%", 2)
+	KeyNodes.objMgr().get_object_by_index("item_pile", 1).get_inventory().spawn_items("%TEST_ITEM%", 2)
+	KeyNodes.objMgr().get_object_by_index("item_pile", 2).get_inventory().spawn_items("%TEST_ITEM%", 2)
 
 	KeyNodes.agentMgr().start_tasks()
 

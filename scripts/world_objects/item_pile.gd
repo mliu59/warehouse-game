@@ -7,12 +7,12 @@ func config_object() -> void:
 	_name = "item_pile"
 	interactable_ = true
 	allowed_interaction_types_ = [
-		OBJ_INTERACTION_TYPE.RETRIEVE_ITEM,
-		OBJ_INTERACTION_TYPE.DEPOSIT_ITEM	
+		ObjInteractionConsts.TYPE.RETRIEVE_ITEM,
+		ObjInteractionConsts.TYPE.DEPOSIT_ITEM	
 	]
 	interaction_directions_ = {
-		OBJ_INTERACTION_TYPE.RETRIEVE_ITEM: MapUtils.ADJ_TILES_8,
-		OBJ_INTERACTION_TYPE.DEPOSIT_ITEM: MapUtils.ADJ_TILES_8
+		ObjInteractionConsts.TYPE.RETRIEVE_ITEM: MapUtils.ADJ_TILES_8,
+		ObjInteractionConsts.TYPE.DEPOSIT_ITEM: MapUtils.ADJ_TILES_8
 	}
 	atlas_pos_ = Vector2i(7, 2)
 	# hide_inventory_ = true
