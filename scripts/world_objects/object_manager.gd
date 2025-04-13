@@ -20,7 +20,7 @@ var obj_type_map: Dictionary = {}
 var running_id_counter: int = 0
 
 func add_object(obj: WorldObject, type: String) -> void:
-	add_child(obj)
+	if not obj.get_parent() == self: add_child(obj)
 	obj_map[obj.get_tile()] = obj
 	if obj_type_map.has(type):
 		obj_type_map[type][obj.get_tile()] = obj
@@ -57,6 +57,12 @@ func clear_objs() -> void:
 	for child in get_children():
 		if is_instance_of(child, WorldObject):
 			remove_child(child)
+
+func init_existing_objects() -> void:
+	for child in get_children():
+		if is_instance_of(child, WorldObject):
+			child.set_tile(child.spawn_point_)
+			add_object(child, child.get_u_name())
 
 func add_world_object(type: String, tile: Vector2i) -> WorldObject:
 	if world_object_dict.has(type):

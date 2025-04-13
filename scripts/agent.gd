@@ -10,16 +10,21 @@ var state_start_time = 0
 # 2 - interacting
 # 3 - idle wander
 
+enum AGENT_STATE {
+	IDLE = 0,
+	MOVING = 1,
+	INTERACTING = 2,
+	IDLE_WANDER = 3
+}
+
 @export var idle_time: int = 500
 @export var start_tile: Vector2i = Vector2i(0, 0)
 @export var debug_color: Color = Color(1, 0, 0, 1)
 
 var path: Array[Vector2i] = []
 var cur_task: Task = null
+var cur_work_order: BaseWorkOrder = null
 var queued_interaction_time: int = 0
-var queued_interaction_obj: WorldObject = null
-var queued_interaction_type: int = -1
-var interact_after_move: bool = false
 
 @export var speed: float = 200.0
 @export var idle_wander_speed: float = 100.0
@@ -54,13 +59,13 @@ func _tp(tgt: Vector2i) -> void:
 func start_tasks() -> void:
 	state_start_time = Time.get_ticks_msec()
 	_tp(get_tile())
-	state = 0
+	state = AGENT_STATE.IDLE
 	toggleDialog(true)
 
 
 
 func default_idle_state() -> void:
-	state = 0
+	state = AGENT_STATE.IDLE
 	render_interact()
 	toggleDialog(true)
 
@@ -71,25 +76,19 @@ func state_transition() -> void:
 		if cur_task == null:
 			queue_idle_wander()
 			return
-	if state == 1 and interact_after_move:
-		interact_after_move = false
-		state = 2
-		render_interact()
-		return
 
-	if cur_task.start_task():
-		cur_task.get_next_subtask()
+	cur_task.get_next_work_order()
 	if cur_task.finished():
 		id_print("Task finished")
 		cur_task = null
-		state = 0
+		state = AGENT_STATE.IDLE
 	else:
-		var subtask = cur_task.get_current_subtask()
-		state = 1
-		subtask.agent_queue_execute(self)
+		cur_work_order = cur_task.get_current_work_order()
+		state = cur_work_order.start_agent_state()
+		cur_work_order.queue_execute()
 
 	render_interact()
-	toggleDialog(state == 0)
+	toggleDialog(state == AGENT_STATE.IDLE)
 
 
 func set_interaction_time(time: int) -> void:
@@ -102,7 +101,7 @@ func queue_idle_wander() -> void:
 	id_print("Idle wander :) No tasks")
 	queue_move_to(KeyNodes.map().get_random_open_tile())
 	cur_speed = idle_wander_speed
-	state = 3
+	state = AGENT_STATE.IDLE_WANDER
 	render_interact()
 	_render_dialog_state()
 
@@ -120,24 +119,24 @@ func _physics_process(delta: float) -> void:
 	match state:
 		-1: 
 			return
-		0: # idle, Check if the agent is idle for too long
+		AGENT_STATE.IDLE: # idle, Check if the agent is idle for too long
 			if Time.get_ticks_msec() - state_start_time > idle_time:
 				state_transition()
 			return
-		1: # moving, Move the agent
+		AGENT_STATE.MOVING: # moving, Move the agent
 			if _physics_move_agent(delta):
 				state_transition()
 			return
-		2: # interacting, Interact with the object
+		AGENT_STATE.INTERACTING: # interacting, Interact with the object
 			render_interact()
 			if Time.get_ticks_msec() - state_start_time > queued_interaction_time:
-				cur_task.get_current_subtask().execute_interact()
+				cur_work_order.execute()
 				state_transition()
 			return
-		3:
+		AGENT_STATE.IDLE_WANDER:
 			# return
 			if _physics_move_agent(delta):
-				state = 0
+				state = AGENT_STATE.IDLE
 				state_start_time = Time.get_ticks_msec()
 				_render_dialog_state()
 			return

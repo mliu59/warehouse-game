@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://bhkrnmtkeomcq"]
+[gd_scene load_steps=3 format=3 uid="uid://bhkrnmtkeomcq"]
 
 [ext_resource type="Script" uid="uid://d1b50tab8fjxp" path="res://scripts/world_objects/target_box.gd" id="1_twyph"]
+[ext_resource type="Texture2D" uid="uid://ckcm1xwkkwgeo" path="res://assets/placeholder/elf.png" id="2_c2uw5"]
 
 [node name="obj" type="Node2D"]
 script = ExtResource("1_twyph")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_c2uw5")

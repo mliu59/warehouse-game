@@ -20,7 +20,7 @@ func get_debug_grid():						return $Debug/Grid
 func get_debug_grid_labels():				return $Debug/GridLabels
 
 func clear_map() -> void:
-	KeyNodes.objMgr().clear_objs()
+	# KeyNodes.objMgr().clear_objs()
 	for child in get_children():
 		if is_instance_of(child, TileMapLayer):
 			child.clear()
@@ -112,10 +112,19 @@ func get_neighbor_cell(coords: Vector2i, direction: TileSet.CellNeighbor) -> Vec
 
 func get_random_open_tile() -> Vector2i:
 	var rng = RandomNumberGenerator.new()
-	var tile = Vector2i(rng.randi_range(min_x, max_x), rng.randi_range(min_y, max_y))
-	while not astar.pt_open(tile):
+	var tile = null
+	while tile == null or not astar.pt_open(tile):
 		tile = Vector2i(rng.randi_range(min_x, max_x), rng.randi_range(min_y, max_y))
 	return tile
+
+func get_virtual_tiles_by_distance(center: Vector2i, distance: int) -> Array[Vector2i]:
+	var tiles = []
+	for x in range(center.x - distance, center.x + distance + 1):
+		for y in range(center.y - distance, center.y + distance + 1):
+			var v = Vector2i(x, y)
+			# if astar.pt_open(v) and get_distance(center, v) == distance:
+			tiles.append(v)
+	return tiles
 
 
 func populate_debug_grid() -> void:
@@ -130,6 +139,22 @@ func populate_debug_grid() -> void:
 			tag.text = str(x) + "," + str(y)
 			tag.position = get_carpet_floor().map_to_local(v) + Vector2(-5, -5)
 			tag.modulate = Color(0, 0, 0, 1)
-			# var font = tag.get_theme_font("font")
 			tag.add_theme_font_size_override("font_size", 5)
 			get_debug_grid_labels().add_child(tag)
+
+
+func get_tiles_for_interaction(search_params: Dictionary, interaction_params: Dictionary, agent: Agent) -> Array:
+	var outputs = []
+	if interaction_params["type"] == ObjInteractionConsts.TYPE.DROP_ITEM:
+		if search_params.has("tile") and astar.pt_open(search_params["tile"]) and \
+			KeyNodes.map().get_distance(search_params["tile"], agent.get_tile()) > 0:
+
+			outputs.append(search_params["tile"])
+		else:
+			var pot_tiles = get_virtual_tiles_by_distance(agent.get_tile(), 10)
+			for tile in pot_tiles:
+				if astar.pt_open(tile) and KeyNodes.map().get_distance(tile, agent.get_tile()) > 0:
+					outputs.append(tile)
+					if search_params.has("any") and search_params["any"]: break
+		
+	return outputs

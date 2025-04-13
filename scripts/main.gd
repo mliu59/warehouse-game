@@ -13,20 +13,22 @@ func _ready() -> void:
 	KeyNodes.camera().center_camera_for_map(KeyNodes.map())
 
 	# generate static objs
-	KeyNodes.objMgr().clear_objs()
-	KeyNodes.objMgr().add_world_object("source_box", test_source)
-	KeyNodes.objMgr().add_world_object("target_box", test_target)
-	KeyNodes.objMgr().add_world_object("item_pile", Vector2i(4, 3))
-	KeyNodes.objMgr().add_world_object("item_pile", Vector2i(9, 2))
-	KeyNodes.objMgr().add_world_object("item_pile", Vector2i(16, 1))
+	KeyNodes.objMgr().init_existing_objects()
+	# KeyNodes.objMgr().clear_objs()
+	# KeyNodes.objMgr().add_world_object("source_box", test_source)
+	# KeyNodes.objMgr().add_world_object("target_box", test_target)
+	# KeyNodes.objMgr().add_world_object("item_pile", Vector2i(4, 3))
+	# KeyNodes.objMgr().add_world_object("item_pile", Vector2i(9, 2))
+	# KeyNodes.objMgr().add_world_object("item_pile", Vector2i(16, 1))
 	KeyNodes.objMgr().render_objects()
 
 	#populate inventories
-	KeyNodes.objMgr().get_object_by_index("source_box").get_inventory().spawn_items("%TEST_ITEM%", 1)
-	KeyNodes.objMgr().get_object_by_index("item_pile", 0).get_inventory().spawn_items("%TEST_ITEM%", 2)
-	KeyNodes.objMgr().get_object_by_index("item_pile", 1).get_inventory().spawn_items("%TEST_ITEM%", 2)
-	KeyNodes.objMgr().get_object_by_index("item_pile", 2).get_inventory().spawn_items("%TEST_ITEM%", 2)
+
+	for id in ["source_box", "item_pile"]:
+		var count = KeyNodes.objMgr().get_object_count(id)
+		for i in range(count):
+			var obj = KeyNodes.objMgr().get_object_by_index(id, i)
+			if obj:
+				obj.get_inventory().spawn_items("%TEST_ITEM%", 3)
 
 	KeyNodes.agentMgr().start_tasks()
-
-

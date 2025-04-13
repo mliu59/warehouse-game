@@ -5,6 +5,8 @@ var atlas_: TileSet = preload("res://scenes/tileset/furniture.tres")
 var atlas_source_: TileSetAtlasSource = atlas_.get_source(0) as TileSetAtlasSource
 var atlas_pos_: Vector2i = Vector2i(6, 2)
 
+@export var spawn_point_: Vector2i = Vector2i(0, 0)
+
 func get_cell_texture() -> Texture:
 	var rect := atlas_source_.get_tile_texture_region(atlas_pos_)
 	var image:Image = atlas_source_.texture.get_image()
@@ -39,17 +41,15 @@ func _init() -> void:
 	_config_object()
 	
 func config_object() -> void: pass # Override this function in subclasses to configure the object
+func get_sprite() -> Sprite2D:	return $Sprite
 
 func _config_object() -> void:
 	config_object()
 	get_inventory().inventory_changed.connect(_on_inventory_changed)
 
-	var sprite_obj = Sprite2D.new()
-	sprite_obj.set_texture(get_cell_texture())
-	add_child(sprite_obj)
-
 func init() -> void:
 	if not passable_: KeyNodes.map().disable_tile(get_tile())
+	get_sprite().set_texture(get_cell_texture())
 
 func get_closest_interaction_tile(src: Vector2i, interaction_type) -> Vector2i:
 	var closest = null

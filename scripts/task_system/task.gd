@@ -21,19 +21,20 @@ func initialize_test_task() -> void:
 		"actor_id": ["target_box"]
 	}
 
-	valid = valid and _add_subtask(agent_params, retrieve_params, interaction_params, ObjInteractionConsts.TYPE.RETRIEVE_ITEM)
-	valid = valid and _add_subtask(agent_params, deposit_params, interaction_params, ObjInteractionConsts.TYPE.DEPOSIT_ITEM)
+	_add_subtask(agent_params, retrieve_params, interaction_params, ObjInteractionConsts.TYPE.RETRIEVE_ITEM)
+	_add_subtask(agent_params, deposit_params, interaction_params, ObjInteractionConsts.TYPE.DEPOSIT_ITEM)
 
 func _add_subtask(
 	src_params: Dictionary, 
 	tgt_params: Dictionary, 
 	interaction_params: Dictionary, 
 	interaction_type: ObjInteractionConsts.TYPE
-) -> bool:
+) -> void:
 	var subtask = Subtask.new()
 	add_child(subtask)
 	subtasks_.append(subtask)
-	return subtask.init(src_params, tgt_params, interaction_params, interaction_type, self)
+	var subtask_success = subtask.init(src_params, tgt_params, interaction_params, interaction_type, self)
+	valid = valid and subtask_success
 
 
 func if_agent_can_execute(agent: Agent) -> bool:
@@ -56,30 +57,26 @@ func generate_work_order(agent: Agent) -> bool:
 
 #WORK ORDER. already determined by the task manager. Separate system as tasks/subtasks
 var current_task_index_: int = -1
+var _completed: bool = false
 
-func started() -> bool:
-	return current_task_index_ != -1
 
-func start_task() -> bool:
-	if not started():
-		# print("Task started")
-		current_task_index_ = 0
-		return false
-	return true
-	
-func get_current_subtask() -> Subtask:
-	# print("Current subtask: ", current_task_index_)
-	return subtasks_[current_task_index_]
+func get_current_work_order() -> BaseWorkOrder:
+	return subtasks_[current_task_index_].get_current_work_order()
 
 # Returns true if there are more subtasks to execute
-func get_next_subtask() -> bool:
-	# print("Next subtask, incrementing index")
-	subtasks_[current_task_index_].mark_completed()
-	current_task_index_ += 1
-	return current_task_index_ < subtasks_.size()
+func get_next_work_order() -> void:
+	if current_task_index_ == -1: 
+		current_task_index_ += 1
+		subtasks_[current_task_index_].get_next_work_order()
+		return
+	subtasks_[current_task_index_].get_next_work_order()
+	if subtasks_[current_task_index_].finished():
+		current_task_index_ += 1
+		if current_task_index_ >= subtasks_.size():
+			_completed = true
+		else:
+			subtasks_[current_task_index_].get_next_work_order()
+		
 
 func finished() -> bool:
-	return current_task_index_ >= subtasks_.size()
-
-func has_next_subtask() -> bool:
-	return current_task_index_ + 1 < subtasks_.size()
+	return _completed
