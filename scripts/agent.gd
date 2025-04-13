@@ -37,6 +37,7 @@ func _init() -> void:
 func _config_agent() -> void:
 	set_u_name("Elf")
 
+
 func _physics_move_agent(delta) -> bool:
 	var cur_pos = position
 	if path.size() == 0:
@@ -98,7 +99,7 @@ func set_interaction_time(time: int) -> void:
 
 
 func queue_idle_wander() -> void:
-	id_print("Idle wander :) No tasks")
+	# id_print("Idle wander :) No tasks")
 	queue_move_to(KeyNodes.map().get_random_open_tile())
 	cur_speed = idle_wander_speed
 	state = AGENT_STATE.IDLE_WANDER

@@ -35,3 +35,11 @@ func debug_str() -> String:
 
 func id_print(_str: String) -> void:
 	print(debug_str() + ": " + _str)
+
+func disable_processing() -> void: #not being triggered... 
+	# Disable processing for this actor
+	set_process(false)
+	set_physics_process(false)
+	set_process_input(false)
+	set_process_unhandled_input(false)
+	set_process_unhandled_key_input(false)

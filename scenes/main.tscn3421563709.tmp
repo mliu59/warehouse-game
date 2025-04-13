@@ -200,10 +200,6 @@ tile_set = SubResource("TileSet_ya4ey")
 [node name="GridLabels" type="Node2D" parent="Map/Debug"]
 modulate = Color(1, 1, 1, 0.427451)
 
-[node name="MainCamera2D" type="Camera2D" parent="Map" groups=["mainCamera"]]
-zoom = Vector2(2, 2)
-script = ExtResource("8_tipki")
-
 [node name="AgentManager" type="Node" parent="."]
 script = ExtResource("8_85g3d")
 
@@ -213,6 +209,10 @@ start_tile = Vector2i(2, 2)
 [node name="Elf2" parent="AgentManager" instance=ExtResource("10_choun")]
 start_tile = Vector2i(3, 11)
 debug_color = Color(0, 0.627785, 0.489506, 1)
+
+[node name="MainCamera2D" type="Camera2D" parent="AgentManager/Elf2" groups=["mainCamera"]]
+zoom = Vector2(2, 2)
+script = ExtResource("8_tipki")
 
 [node name="Elf3" parent="AgentManager" instance=ExtResource("10_choun")]
 start_tile = Vector2i(11, 3)

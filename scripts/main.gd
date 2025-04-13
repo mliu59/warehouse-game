@@ -10,8 +10,6 @@ func _ready() -> void:
 	
 	# generate map
 	KeyNodes.map().generate_map()
-	KeyNodes.camera().center_camera_for_map(KeyNodes.map())
-
 	# generate static objs
 	KeyNodes.objMgr().init_existing_objects()
 	# KeyNodes.objMgr().clear_objs()
@@ -30,4 +28,5 @@ func _ready() -> void:
 			if obj:
 				obj.get_inventory().spawn_items("%TEST_ITEM%", 3)
 
+	KeyNodes.mainCamera().center_cam()
 	KeyNodes.agentMgr().start_tasks()

@@ -4,7 +4,11 @@ class_name WorkOrderCreateWorldObject
 
 func queue_execute() -> void:
 	var agent = get_params().get("agent")
-	agent.set_interaction_time(get_params().get("duration", 0))
+	var t = 0
+	if not get_params().get("virtual", false):
+		t = get_params().get("duration", 0)
+	
+	agent.set_interaction_time(t)
 
 func execute() -> bool:
 	var obj_id: String = get_params().get("obj_id")
