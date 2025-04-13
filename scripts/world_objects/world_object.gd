@@ -32,9 +32,9 @@ var interaction_times_: Dictionary = {
 var interactable_: bool = false
 var passable_: bool = false
 var size_: Vector2i = Vector2i(1, 1)
-var visible_: bool = true
 var hide_inventory_: bool = false
 var destroy_on_empty_inventory_: bool = false
+var virtual_: bool = false
 
 func _init() -> void:
 	init_unique_actor()
@@ -47,9 +47,19 @@ func _config_object() -> void:
 	config_object()
 	get_inventory().inventory_changed.connect(_on_inventory_changed)
 
-func init() -> void:
-	if not passable_: KeyNodes.map().disable_tile(get_tile())
+func set_virtual(virtual: bool) -> void:
+	virtual_ = virtual
+	if virtual:
+		KeyNodes.map().enable_tile(get_tile())
+	elif not passable_:
+		KeyNodes.map().disable_tile(get_tile())
+	visible = not virtual
+	
+
+func init(virtual: bool) -> void:
+	set_virtual(virtual)
 	get_sprite().set_texture(get_cell_texture())
+	render()
 
 func get_closest_interaction_tile(src: Vector2i, interaction_type) -> Vector2i:
 	var closest = null

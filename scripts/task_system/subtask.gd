@@ -118,8 +118,8 @@ func generate_work_order(agent: Agent) -> bool:
 		
 		var inv_transfer_params = {
 			"agent": agent,
-			"src": agent.get_inventory(),
-			"tgt": tgt_obj.get_inventory(),
+			"src": agent,
+			"tgt": tgt_obj,
 		}
 		inv_transfer_params.merge(_interaction_params)
 
@@ -135,6 +135,27 @@ func generate_work_order(agent: Agent) -> bool:
 		else:
 			_add_work_order(WorkOrderInteract.new(), BaseWorkOrder.WORK_ORDER_TYPE.INVENTORY_TRANSFER_DEPOSIT, inv_transfer_params)
 	
+	if is_drop_item():
+		var drop_params = {
+			"agent": agent,
+			"src": agent,
+			"obj_id": "item_pile",
+			"virtual": true,
+		}
+		drop_params.merge(_interaction_params)
+		drop_params.merge(_tgt_params)
+		var temp_item_pile = load(KeyNodes.objMgr().world_object_dict["item_pile"]).instantiate()
+		temp_item_pile.set_tile(drop_params.get("tgt_tile"))
+
+		_add_work_order(WorkOrderCreateWorldObject.new(), BaseWorkOrder.WORK_ORDER_TYPE.CREATE_WORLD_OBJECT, drop_params)
+		_add_work_order(WorkOrderMove.new(), BaseWorkOrder.WORK_ORDER_TYPE.MOVE_TO, {
+			"agent": agent,
+			"tgt": temp_item_pile.get_closest_interaction_tile(agent.get_tile(), get_interaction_type()),
+		})
+		_add_work_order(WorkOrderInteract.new(), BaseWorkOrder.WORK_ORDER_TYPE.INVENTORY_TRANSFER_DEPOSIT, drop_params)
+
+
+
 	return true
 
 

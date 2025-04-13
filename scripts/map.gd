@@ -117,7 +117,7 @@ func get_random_open_tile() -> Vector2i:
 		tile = Vector2i(rng.randi_range(min_x, max_x), rng.randi_range(min_y, max_y))
 	return tile
 
-func get_virtual_tiles_by_distance(center: Vector2i, distance: int) -> Array[Vector2i]:
+func get_virtual_tiles_by_distance(center: Vector2i, distance: int) -> Array:
 	var tiles = []
 	for x in range(center.x - distance, center.x + distance + 1):
 		for y in range(center.y - distance, center.y + distance + 1):
@@ -146,10 +146,10 @@ func populate_debug_grid() -> void:
 func get_tiles_for_interaction(search_params: Dictionary, interaction_params: Dictionary, agent: Agent) -> Array:
 	var outputs = []
 	if interaction_params["type"] == ObjInteractionConsts.TYPE.DROP_ITEM:
-		if search_params.has("tile") and astar.pt_open(search_params["tile"]) and \
-			KeyNodes.map().get_distance(search_params["tile"], agent.get_tile()) > 0:
+		if search_params.has("tgt_tile") and astar.pt_open(search_params["tgt_tile"]) and \
+			KeyNodes.map().get_distance(search_params["tgt_tile"], agent.get_tile()) > 0:
 
-			outputs.append(search_params["tile"])
+			outputs.append(search_params["tgt_tile"])
 		else:
 			var pot_tiles = get_virtual_tiles_by_distance(agent.get_tile(), 10)
 			for tile in pot_tiles:

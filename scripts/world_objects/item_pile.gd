@@ -8,11 +8,13 @@ func config_object() -> void:
 	interactable_ = true
 	allowed_interaction_types_ = [
 		ObjInteractionConsts.TYPE.RETRIEVE_ITEM,
-		ObjInteractionConsts.TYPE.DEPOSIT_ITEM	
+		ObjInteractionConsts.TYPE.DEPOSIT_ITEM,
+		ObjInteractionConsts.TYPE.DROP_ITEM
 	]
 	interaction_directions_ = {
 		ObjInteractionConsts.TYPE.RETRIEVE_ITEM: MapUtils.ADJ_TILES_8,
-		ObjInteractionConsts.TYPE.DEPOSIT_ITEM: MapUtils.ADJ_TILES_8
+		ObjInteractionConsts.TYPE.DEPOSIT_ITEM: MapUtils.ADJ_TILES_8,
+		ObjInteractionConsts.TYPE.DROP_ITEM: MapUtils.ADJ_TILES_8
 	}
 	atlas_pos_ = Vector2i(7, 2)
 	# hide_inventory_ = true

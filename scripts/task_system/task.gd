@@ -24,6 +24,26 @@ func initialize_test_task() -> void:
 	_add_subtask(agent_params, retrieve_params, interaction_params, ObjInteractionConsts.TYPE.RETRIEVE_ITEM)
 	_add_subtask(agent_params, deposit_params, interaction_params, ObjInteractionConsts.TYPE.DEPOSIT_ITEM)
 
+func initialize_drop_task() -> void:
+	var drop_params = {
+		"class": "WorldObject",
+		"tgt_tile": Vector2i(6, 11),
+	}
+	var agent_params = {
+		"class": "Agent",
+	}
+	var interaction_params = {
+		"item_id": "%TEST_ITEM%",
+		"item_qty": 1,
+		"duration": 500,
+	}
+	var retrieve_params = {
+		"class": "WorldObject",
+		"actor_id": ["source_box", "item_pile"],
+	}
+	_add_subtask(agent_params, retrieve_params, interaction_params, ObjInteractionConsts.TYPE.RETRIEVE_ITEM)
+	_add_subtask(agent_params, drop_params, interaction_params, ObjInteractionConsts.TYPE.DROP_ITEM)
+
 func _add_subtask(
 	src_params: Dictionary, 
 	tgt_params: Dictionary, 

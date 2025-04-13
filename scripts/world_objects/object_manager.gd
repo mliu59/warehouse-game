@@ -19,14 +19,19 @@ var obj_map: Dictionary = {}
 var obj_type_map: Dictionary = {}
 var running_id_counter: int = 0
 
-func add_object(obj: WorldObject, type: String) -> void:
+func find_world_object_by_tile(tile: Vector2i) -> WorldObject:
+	if obj_map.has(tile):
+		return obj_map[tile]
+	return null
+
+func add_object(obj: WorldObject, type: String, virtual: bool) -> void:
 	if not obj.get_parent() == self: add_child(obj)
 	obj_map[obj.get_tile()] = obj
 	if obj_type_map.has(type):
 		obj_type_map[type][obj.get_tile()] = obj
 	else:
 		obj_type_map[type] = {obj.get_tile(): obj}
-	obj.init()
+	obj.init(virtual)
 	obj.set_u_id(running_id_counter)
 	running_id_counter += 1
 
@@ -62,22 +67,17 @@ func init_existing_objects() -> void:
 	for child in get_children():
 		if is_instance_of(child, WorldObject):
 			child.set_tile(child.spawn_point_)
-			add_object(child, child.get_u_name())
+			add_object(child, child.get_u_name(), false)
 
-func add_world_object(type: String, tile: Vector2i) -> WorldObject:
+func add_world_object(type: String, tile: Vector2i, virtual: bool = false) -> WorldObject:
 	if world_object_dict.has(type):
 		var obj = load(world_object_dict[type]).instantiate()
 		obj.set_tile(tile)
-		add_object(obj, type)
+		add_object(obj, type, virtual)
 		return obj
 	else:
 		print("Object type not found in dictionary")
 		return null
-
-
-func render_objects() -> void:
-	for obj in obj_map.values():
-		obj.render()
 
 
 

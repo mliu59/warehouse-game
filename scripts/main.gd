@@ -20,7 +20,6 @@ func _ready() -> void:
 	# KeyNodes.objMgr().add_world_object("item_pile", Vector2i(4, 3))
 	# KeyNodes.objMgr().add_world_object("item_pile", Vector2i(9, 2))
 	# KeyNodes.objMgr().add_world_object("item_pile", Vector2i(16, 1))
-	KeyNodes.objMgr().render_objects()
 
 	#populate inventories
 
